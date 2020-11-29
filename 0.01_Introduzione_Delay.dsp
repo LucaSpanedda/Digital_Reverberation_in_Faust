@@ -18,9 +18,7 @@ import("stdfaust.lib");
 // possiamo creare un impulso di Dirac, che rappresenta 
 // la nostra unità minima, ovvero il singolo campione
 // mettendo un numero 1 e sottraendo da esso lo stesso valore
-// ma facendolo ad un campione di ritardo. Così facendo
-// potremo udire un valore 1 della durata di un singolo campione
-// all'avvio del programma.
+// ma facendolo ad un campione di ritardo. 
 
 // Impulso di Dirac
 dirac = 1-1';
