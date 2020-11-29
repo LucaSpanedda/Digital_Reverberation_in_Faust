@@ -38,4 +38,4 @@ with{
 // uscita con il process:
 // viene usato un noise per testare il filtro in questa uscita
 process = no.noise <: combfeedbackfilter(100, 0.85, 0.), //out 1
-					  combfeedbackfilter(100, 0.85, 0.); //out 2
+			combfeedbackfilter(100, 0.85, 0.); //out 2
