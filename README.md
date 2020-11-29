@@ -5,7 +5,7 @@ Questo lavoro si divide principalmente in due sezioni:
 1 - La sezione filtri, dove vengono creati vari filtri che verranno poi usati nei modelli di riverbero
 2 - La sezione riverberi, dove i filtri vengono applicati per creare i diversi modelli di riverberazione
 
-Referenze principali per del repository:
+Referenze principali del repository:
 
 1 
 Introduction to Digital Filters: 
