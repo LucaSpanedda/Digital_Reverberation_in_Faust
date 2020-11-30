@@ -38,7 +38,7 @@ allpassfilter(delaysamples, filtergain, outgain) = allpassout
 
         allpassout = allpass * outgain;
 
-        };
+};
 
 
 // uscita con il process:
