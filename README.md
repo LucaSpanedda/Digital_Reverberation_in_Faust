@@ -40,3 +40,7 @@ http://www.spinsemi.com/knowledge_base/effects.html#Reverberation
 5
 freeverb3vst - Reverb Algorithms Tips 
 http://freeverb3vst.osdn.jp/tips/reverb.shtml
+
+6
+History of allpass loop / "ring" reverbs
+http://www.spinsemi.com/forum/viewtopic.php?p=555&sid=5d31391b3883f1b9e013d5af80805019
