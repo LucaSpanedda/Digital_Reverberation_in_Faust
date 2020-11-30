@@ -5,6 +5,7 @@ Questo lavoro si divide principalmente in due sezioni:
 1 - La sezione filtri, dove vengono creati vari filtri che verranno poi usati nei modelli di riverbero
 2 - La sezione riverberi, dove i filtri vengono applicati per creare i diversi modelli di riverberazione
 
+
 Referenze principali del repository:
 
 1 
@@ -24,3 +25,8 @@ https://www.dsprelated.com/freebooks.php
 2
 ARTIFICIAL REVERBERATION: su DSPRELATED
 https://www.dsprelated.com/freebooks/pasp/Artificial_Reverberation.html
+
+3
+Corey Kereliuk - Building a Reverb Plugin in Faust
+Keith Barr’s reverb architecture
+http://blog.reverberate.ca/post/faust-reverb/
