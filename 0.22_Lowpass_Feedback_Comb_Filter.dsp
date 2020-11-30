@@ -22,19 +22,21 @@ with{
     a seguito del feedback entra il segnale : nel onepole.
     L'onepole è un lowpass dove si può controllare il taglio 
     di frequenza tra 0. e 1. 
+    Nel feedback è già presente di default un campione di ritardo,
+    ecco perché delaysamples-1.
     */
 
     // Filtro Lowpass (Onepole Filter)
     onepolefilter = _*lowpasscut : +~(_ : *(1- lowpasscut));
 
     // Filtro Comb con Lowpass nella retroazione --> (: onepolefilter)
-    combfunction = +~(_@(delaysamples) : *(feedback) : onepolefilter);
+    combfunction = +~(_@(delaysamples-1) : *(feedback) : onepolefilter);
     combfeedblowout = combfunction * outgain;
 
 };
 
 
 // uscita con il process:
-// viene usato un noise per testare il filtro in questa uscita
-process = no.noise <: combfeedbacklowpassfilter(400, 0.9, 0., 0.1), //out 1
-                        combfeedbacklowpassfilter(400, 0.9, 0., 0.1); //out 2
+// viene usato il segnale in ingresso per testare il filtro in uscita
+process = _ <: combfeedbacklowpassfilter(4200, 0.98, 0., 0.15), //out 1
+                        combfeedbacklowpassfilter(4000, 0.98, 0., 0.15); //out 2
