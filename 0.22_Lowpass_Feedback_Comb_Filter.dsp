@@ -25,7 +25,7 @@ with{
     */
 
     // Filtro Lowpass (Onepole Filter)
-    onepolefilter = _*lowpasscut : +~(_' : *(1- lowpasscut));
+    onepolefilter = _*lowpasscut : +~(_ : *(1- lowpasscut));
 
     // Filtro Comb con Lowpass nella retroazione --> (: onepolefilter)
     combfunction = +~(_@(delaysamples) : *(feedback) : onepolefilter);
@@ -36,5 +36,5 @@ with{
 
 // uscita con il process:
 // viene usato un noise per testare il filtro in questa uscita
-process = no.noise <: combfeedbacklowpassfilter(200, 0.9, 0., 0.4), //out 1
-                        combfeedbacklowpassfilter(200, 0.9, 0., 0.4); //out 2
+process = no.noise <: combfeedbacklowpassfilter(400, 0.9, 0., 0.1), //out 1
+                        combfeedbacklowpassfilter(400, 0.9, 0., 0.1); //out 2
