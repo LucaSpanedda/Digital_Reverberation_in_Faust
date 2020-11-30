@@ -1,6 +1,6 @@
 // ----------------------------------------
 // ALCUNI METODI PER LA REALIZZAZIONE DI 
-// CIRCUITI RICURSIVI (FEEDBACK) IN FAUST
+// CIRCUITI RICORSIVI (FEEDBACK) IN FAUST
 // ----------------------------------------
 
 /*
@@ -12,7 +12,7 @@ https://www.dariosanfilippo.com/blog/2020/faust_recursive_circuits/
 
 Illustreremo 3 Metodi principali:
 
-1 - Scrivere la riga di codice con recursività interne:
+1 - Scrivere la riga di codice con recorsività interne:
     in questo modo l'operatore tilde ~ manda il segnale
     in uscita all'interno di se stesso, al primo ingresso
     disponibile. Creando un circuito di retroazione (feedback)
@@ -38,7 +38,7 @@ Illustreremo 3 Metodi principali:
 
 3 - Un terzo metodo è utilizzare l'ambiente letrec.
     con questo metodo possiamo scrivere un segnale
-    in modo ricursivo, in modo simile a come vengono
+    in modo ricorsivo, in modo simile a come vengono
     scritte le equazioni di ricorrenza.
     
     esempio:
@@ -61,5 +61,5 @@ lowpass(cf, x) = y
             w(f) = 2 * ma.PI * f / ma.SR;
             };
 
-// Uscita della funzione ricursiva scritta con letrec
+// Uscita della funzione ricorsiva scritta con letrec
 process = lowpass;
