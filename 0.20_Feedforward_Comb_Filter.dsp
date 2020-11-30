@@ -23,7 +23,10 @@ with{
     (dunque valore da passare esternamente)
     e uno senza ritardo , _ (, segna il passaggio al secondo percorso)
     vengono poi risommati in un segnale unico :> _ ;
-
+    
+    Nel feedback è già presente di default un campione di ritardo,
+    ecco perché delaysamples-1.
+    
     il segnale in ritardo di un campione 
     ha un controllo di ampiezza * feedforward
 
@@ -31,7 +34,7 @@ with{
     sulla funzione in uscita onezeroout
     */
 
-   combfastfunction = _ <: ( _@(delaysamples) * feedforward ), _ :> _ ;
+   combfastfunction = _ <: ( _@(delaysamples-1) * feedforward ), _ :> _ ;
    combfastout = combfastfunction * outgain;
 
 };
