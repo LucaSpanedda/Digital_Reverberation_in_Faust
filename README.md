@@ -36,3 +36,7 @@ Spin Semiconductor DSP Basics
 http://www.spinsemi.com/knowledge_base/dsp_basics.html
 Spin Semiconductor Audio Effects
 http://www.spinsemi.com/knowledge_base/effects.html#Reverberation
+
+5
+freeverb3vst - Reverb Algorithms Tips 
+http://freeverb3vst.osdn.jp/tips/reverb.shtml
