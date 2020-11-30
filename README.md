@@ -30,3 +30,9 @@ https://www.dsprelated.com/freebooks/pasp/Artificial_Reverberation.html
 Corey Kereliuk - Building a Reverb Plugin in Faust
 Keith Barr’s reverb architecture
 http://blog.reverberate.ca/post/faust-reverb/
+
+4
+Spin Semiconductor DSP Basics
+http://www.spinsemi.com/knowledge_base/dsp_basics.html
+Spin Semiconductor Audio Effects
+http://www.spinsemi.com/knowledge_base/effects.html#Reverberation
