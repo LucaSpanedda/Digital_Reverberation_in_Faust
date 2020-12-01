@@ -13,10 +13,10 @@ Introduction to Digital Filters:
 With Audio Applications.
 Libro di Julius O. Smith III.
 Links alla serie di Libri di Smith:
-1 Mathematics of the Discrete Fourier Transform (DFT)
-2 Introduction to Digital Filters
-3 Physical Audio Signal Processing
-4 Spectral Audio Signal Processing
+- Mathematics of the Discrete Fourier Transform (DFT)
+- Introduction to Digital Filters
+- Physical Audio Signal Processing
+- Spectral Audio Signal Processing
 sulla pagina CCRMA di J.Smith
 https://ccrma.stanford.edu/~jos/fp/
 su DSP Related
@@ -44,3 +44,7 @@ http://freeverb3vst.osdn.jp/tips/reverb.shtml
 6
 History of allpass loop / "ring" reverbs
 http://www.spinsemi.com/forum/viewtopic.php?p=555&sid=5d31391b3883f1b9e013d5af80805019
+
+7
+Musical Applications of Microprocessors (The Hayden microcomputer series) 
+http://sites.music.columbia.edu/cmc/courses/g6610/fall2016/week8/Musical_Applications_of_Microprocessors-Charmberlin.pdf
