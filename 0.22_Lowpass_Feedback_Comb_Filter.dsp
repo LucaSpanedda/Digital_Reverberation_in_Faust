@@ -2,7 +2,7 @@
 import("stdfaust.lib");
 
 // ----------------------------------------
-// FEEDBACK COMB FILTER (IIR di N° Ordine)
+// FEEDBACK COMB LOWPASS FILTER (IIR di N° Ordine)
 // ----------------------------------------
 
 /* 
