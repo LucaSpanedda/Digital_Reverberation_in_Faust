@@ -14,7 +14,8 @@ filtergain = tempo di decadimento del riverbero
 */
 
 // RIVERBERO DI ALLPASS DI HAL CHAMBERLIN
-charmberlindecayfixreverb(filtergain, reverbgain) = charmberlinleftout, charmberlinrightout
+charmberlindecayfixreverb(filtergain, reverbgain) = 
+charmberlinleftout, charmberlinrightout
     // allpassfilter include al suo interno:
     with{
 
@@ -85,6 +86,7 @@ charmberlindecayfixreverb(filtergain, reverbgain) = charmberlinleftout, charmber
 
 
 };
+
 
 
 // uscita con il process:
