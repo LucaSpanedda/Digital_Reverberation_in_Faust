@@ -9,7 +9,8 @@ import("stdfaust.lib");
 /* 
 Simulazione delle prime riflessioni in una stanza con
 il punto sorgente che coincide col punto di ascolto:
-
+Stanza: 10metri x 5metri x 3metri
+Ascoltatore/Sorgente posto al centro delle grandezze.
 Velocità del suono in aria a 20° : 343,1 METRI al SECONDO
 
 parete frontale a     5,0 METRI circa
@@ -32,7 +33,6 @@ earlyreflections(earlyreflectgain) = primeriflessioniout
         e la funzione mi tira fuori il valore in campioni:
         delaysamples = (ma.SR / 1000.) * delayinms;
         */
-
 
         // tempo riflessione della parete frontale:             29.1460216 ms.
         paretefrontale = _ * earlyreflectgain : @((ma.SR / 1000.) * 29.1460216);
