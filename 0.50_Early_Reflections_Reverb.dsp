@@ -2,7 +2,7 @@
 import("stdfaust.lib");
 
 // ----------------------------------------
-// EARLY REFLECTIONS
+// EARLY REFLECTIONS (PRIME RIFLESSIONI)
 // ----------------------------------------
 
 
@@ -10,7 +10,7 @@ import("stdfaust.lib");
 Simulazione delle prime riflessioni in una stanza con
 il punto sorgente che coincide col punto di ascolto:
 
-Velocità del suono in aria a 20° a 343,1 METRI al SECONDO
+Velocità del suono in aria a 20° : 343,1 METRI al SECONDO
 
 parete frontale a     5,0 METRI circa
 parete posteriore a   5,0 METRI circa
@@ -23,7 +23,7 @@ pavimento a           1,5 METRI circa
 
 // PRIME RIFLESSIONI
 earlyreflections(earlyreflectgain) = primeriflessioniout
-    // allpassfilter include al suo interno:
+    // earlyreflections include al suo interno:
     with{
 
         /* 
