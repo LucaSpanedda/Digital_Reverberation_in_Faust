@@ -48,3 +48,7 @@ http://www.spinsemi.com/forum/viewtopic.php?p=555&sid=5d31391b3883f1b9e013d5af80
 7
 Musical Applications of Microprocessors (The Hayden microcomputer series) 
 http://sites.music.columbia.edu/cmc/courses/g6610/fall2016/week8/Musical_Applications_of_Microprocessors-Charmberlin.pdf
+
+8
+acustica_Riverbero - Alfredo Ardia
+http://appuntimusicaelettronica.blogspot.com/2012/10/acusticariverbero.html
