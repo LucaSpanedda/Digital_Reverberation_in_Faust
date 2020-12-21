@@ -52,3 +52,7 @@ http://sites.music.columbia.edu/cmc/courses/g6610/fall2016/week8/Musical_Applica
 8
 acustica_Riverbero - Alfredo Ardia
 http://appuntimusicaelettronica.blogspot.com/2012/10/acusticariverbero.html
+
+9
+Algorithmic Reverbs: The Moorer Design
+https://christianfloisand.wordpress.com/2012/10/18/algorithmic-reverbs-the-moorer-design/
