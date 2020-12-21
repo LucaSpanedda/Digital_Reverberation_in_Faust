@@ -2,7 +2,7 @@
 import("stdfaust.lib");
 
 // ----------------------------------------
-// EARLY REFLECTIONS (PRIME RIFLESSIONI)
+// RIVERBERO DI MOORER
 // ----------------------------------------
 
 
@@ -125,7 +125,6 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
         reverbout = primeriflessioniout + allpass;
 
 };
-
 
 // uscita con il process:
 // viene usato il segnale in ingresso per testare 
