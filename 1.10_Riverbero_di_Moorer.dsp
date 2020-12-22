@@ -37,29 +37,30 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
         6 EARLY REFLECTIONS
         6 prime riflessioni per simulare il tempo di ritorno del suono da:
         4 muri laterali, soffitto e pavimento.
+        Tutti i ritardi utilizzati vengono approssimati ad nel numero primo più vicino
         */
 
-        // tempo riflessione della parete frontale:             29.1460216 ms.
-        paretefrontale = _ * gainearlyreflections : @((ma.SR / 1000.) * 29.1460216);
+        // tempo riflessione della parete frontale, approssimazione a numero primo
+        paretefrontale = _ * gainearlyreflections : @((ma.SR / 1000.) * 29.17);
 
-        // tempo riflessione della parete posteriore:           29.0000000 ms.
-        pareteposteriore = _ * gainearlyreflections : @((ma.SR / 1000.) * 29.0000000);
+        // tempo riflessione della parete posteriore, approssimazione a numero primo
+        pareteposteriore = _ * gainearlyreflections : @((ma.SR / 1000.) * 29.09);
 
-        // tempo riflessione della parete sinistra:             14.5730108 ms.
-        paretesinistra = _ * gainearlyreflections : @((ma.SR / 1000.) * 14.5730108);
+        // tempo riflessione della parete sinistra, approssimazione a numero primo
+        paretesinistra = _ * gainearlyreflections : @((ma.SR / 1000.) * 14.59);
 
-        // tempo riflessione della parete destra:               14.0000000 ms.
-        paretedestra = _ * gainearlyreflections : @((ma.SR / 1000.) * 14.0000000);
+        // tempo riflessione della parete destra, approssimazione a numero primo
+        paretedestra = _ * gainearlyreflections : @((ma.SR / 1000.) * 14.53);
 
-        // tempo riflessione soffitto:                          8.00000000 ms.
-        soffitto = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.00000000);
+        // tempo riflessione soffitto, approssimazione a numero primo
+        soffitto = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.73);
 
-        // tempo riflessione pavimento:                         8.74380648 ms.
-        pavimento = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.74380648);
+        // tempo riflessione pavimento, approssimazione a numero primo
+        pavimento = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.77);
 
 
         // uscita delle prime riflessioni
-        primeriflessioniout =   _ * gainearlyreflections
+        primeriflessioni =   _ * gainearlyreflections
                                 + paretefrontale + pareteposteriore 
                                 + paretesinistra + paretedestra 
                                 + soffitto + pavimento;
@@ -69,43 +70,44 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
     /* 
     6 FILTRI COMB CON LOWPASS IIR DEL PRIMO ORDINE
     (lowpass per simulare assorbimento frequenze alte dell'aria)
-    i ritardi dei ricircoli sono gli stessi delle prime riflessioni
+    i ritardi dei ricircoli sono gli stessi delle prime riflessioni.
+    Tutti i ritardi nei comb tengono conto delle pareti e delle early reflections
     */
 
     // Filtro Lowpass (Onepole Filter) : parete frontale
     onepolefrontale = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : parete frontale
-    combfrontale = primeriflessioniout*0.1 : +~(_@((ma.SR / 1000.) * 29.1460216) : 
+    combfrontale = primeriflessioni : +~(_@((ma.SR / 1000.) * 29.17) : 
     * (duratadecay) : onepolefrontale);
 
     // Filtro Lowpass (Onepole Filter) : parete posteriore
     onepoleposteriore = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : parete posteriore
-    combposteriore = primeriflessioniout*0.1 : +~(_@((ma.SR / 1000.) * 29.0) : 
+    combposteriore = primeriflessioni : +~(_@((ma.SR / 1000.) * 29.09) : 
     * (duratadecay) : onepoleposteriore);
 
     // Filtro Lowpass (Onepole Filter) : parete sinistra
     onepolesinistra = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : parete sinistra
-    combsinistra = primeriflessioniout*0.1 : +~(_@((ma.SR / 1000.) * 14.5730108) : 
+    combsinistra = primeriflessioni : +~(_@((ma.SR / 1000.) * 14.59) : 
     * (duratadecay) : onepolesinistra);
 
     // Filtro Lowpass (Onepole Filter) : parete destra
     onepoledestra = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : parete destra
-    combdestra = primeriflessioniout*0.1 : +~(_@((ma.SR / 1000.) * 14.0) : 
+    combdestra = primeriflessioni : +~(_@((ma.SR / 1000.) * 14.53) : 
     * (duratadecay) : onepoledestra);
 
     // Filtro Lowpass (Onepole Filter) : pavimento
     onepolepavimento = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : pavimento
-    combpavimento = primeriflessioniout*0.1 : +~(_@((ma.SR / 1000.) * 8.74380648) : 
+    combpavimento = primeriflessioni : +~(_@((ma.SR / 1000.) * 8.73) : 
     * (duratadecay) : onepolepavimento);
 
     // Filtro Lowpass (Onepole Filter) : soffitto
     onepolesoffitto = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : soffitto
-    combsoffitto = primeriflessioniout*0.1 : +~(_@((ma.SR / 1000.) * 8.0) : 
+    combsoffitto = primeriflessioni : +~(_@((ma.SR / 1000.) * 8.77) : 
     * (duratadecay) : onepolesoffitto);
 
 
@@ -118,15 +120,17 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
     /* 
     ALLPASS DOPO I 6 COMB
     */
-        allpass = outcombs : 
+        allpassuno = outcombs : 
         (+ : _ <: @((ma.SR / 1000.) * 6.0), *(0.7)) ~ 
         *(-0.7) : mem, _ : + : _;
 
-        reverbout = primeriflessioniout + allpass;
+        delaycoda = allpassuno :@((ma.SR / 1000.) * 29.17);
+
+        reverbout = primeriflessioni + delaycoda;
 
 };
 
 // uscita con il process:
-// viene usato il segnale in ingresso per testare 
+// viene usato il segnale in ingresso per testare.
 // moorer_reverb(gainearlyreflections, lowpasscut, duratadecay)
-process = _ <: moorer_reverb(0.5, 0.64, 0.992), moorer_reverb(0.5, 0.62, 0.993);
+process = _ <: moorer_reverb(0.1, 0.6, 0.990), moorer_reverb(0.1, 0.6, 0.992);
