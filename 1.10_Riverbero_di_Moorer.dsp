@@ -27,12 +27,13 @@ pavimento a           1,5 METRI circa
 
 
 // MOORER REVERB
+
 moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
-    // MOORER REVERB include al suo interno:
+// MOORER REVERB include al suo interno:
     with{
 
-// STANZA : 10metri x 5metri x 3metri.
-// ----------------------------------------
+        // STANZA : 10metri x 5metri x 3metri.
+        // ----------------------------------------
         /* 
         6 EARLY REFLECTIONS
         6 prime riflessioni per simulare il tempo di ritorno del suono da:
@@ -53,10 +54,10 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
         paretedestra = _ * gainearlyreflections : @((ma.SR / 1000.) * 14.53);
 
         // tempo riflessione soffitto, approssimazione a numero primo
-        soffitto = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.73);
+        soffitto = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.731);
 
         // tempo riflessione pavimento, approssimazione a numero primo
-        pavimento = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.77);
+        pavimento = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.779);
 
 
         // uscita delle prime riflessioni
@@ -66,7 +67,7 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
                                 + soffitto + pavimento;
         
 
-// ----------------------------------------
+    // ----------------------------------------
     /* 
     6 FILTRI COMB CON LOWPASS IIR DEL PRIMO ORDINE
     (lowpass per simulare assorbimento frequenze alte dell'aria)
@@ -101,13 +102,13 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
     // Filtro Lowpass (Onepole Filter) : pavimento
     onepolepavimento = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : pavimento
-    combpavimento = primeriflessioni : +~(_@((ma.SR / 1000.) * 8.73) : 
+    combpavimento = primeriflessioni : +~(_@((ma.SR / 1000.) * 8.731) : 
     * (duratadecay) : onepolepavimento);
 
     // Filtro Lowpass (Onepole Filter) : soffitto
     onepolesoffitto = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : soffitto
-    combsoffitto = primeriflessioni : +~(_@((ma.SR / 1000.) * 8.77) : 
+    combsoffitto = primeriflessioni : +~(_@((ma.SR / 1000.) * 8.779) : 
     * (duratadecay) : onepolesoffitto);
 
 
@@ -116,19 +117,20 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
                 combpavimento + combsoffitto;
 
 
-// ----------------------------------------
-    /* 
-    ALLPASS DOPO I 6 COMB
-    */
+        // ----------------------------------------
+        /* 
+        ALLPASS DOPO I 6 COMB
+        */
         allpassuno = outcombs : 
         (+ : _ <: @((ma.SR / 1000.) * 6.0), *(0.7)) ~ 
         *(-0.7) : mem, _ : + : _;
 
-        delaycoda = allpassuno :@((ma.SR / 1000.) * 29.17);
+        delaycoda = allpassuno :@((ma.SR / 1000.) * 8.731);
 
         reverbout = primeriflessioni + delaycoda;
 
 };
+
 
 // uscita con il process:
 // viene usato il segnale in ingresso per testare.
