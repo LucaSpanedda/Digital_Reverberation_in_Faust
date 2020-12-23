@@ -6,6 +6,7 @@ import("stdfaust.lib");
 // ----------------------------------------
 
 
+
 /* 
 
 Simulazione di Riverbero secondo il modello di James A. Moorer
@@ -78,38 +79,38 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
     // Filtro Lowpass (Onepole Filter) : parete frontale
     onepolefrontale = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : parete frontale
-    combfrontale = primeriflessioni : +~(_@((ma.SR / 1000.) * 29.17) : 
-    * (duratadecay) : onepolefrontale);
+    combfrontale = primeriflessioni : +~(_@(((ma.SR / 1000.) * 29.17)-1) : 
+    * (duratadecay) : onepolefrontale) : mem;
 
     // Filtro Lowpass (Onepole Filter) : parete posteriore
     onepoleposteriore = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : parete posteriore
-    combposteriore = primeriflessioni : +~(_@((ma.SR / 1000.) * 29.09) : 
-    * (duratadecay) : onepoleposteriore);
+    combposteriore = primeriflessioni : +~(_@(((ma.SR / 1000.) * 29.09)-1) : 
+    * (duratadecay) : onepoleposteriore) : mem;
 
     // Filtro Lowpass (Onepole Filter) : parete sinistra
     onepolesinistra = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : parete sinistra
-    combsinistra = primeriflessioni : +~(_@((ma.SR / 1000.) * 14.59) : 
-    * (duratadecay) : onepolesinistra);
+    combsinistra = primeriflessioni : +~(_@(((ma.SR / 1000.) * 14.59)-1) : 
+    * (duratadecay) : onepolesinistra) : mem;
 
     // Filtro Lowpass (Onepole Filter) : parete destra
     onepoledestra = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : parete destra
-    combdestra = primeriflessioni : +~(_@((ma.SR / 1000.) * 14.53) : 
-    * (duratadecay) : onepoledestra);
+    combdestra = primeriflessioni : +~(_@(((ma.SR / 1000.) * 14.53)-1) : 
+    * (duratadecay) : onepoledestra) : mem;
 
     // Filtro Lowpass (Onepole Filter) : pavimento
     onepolepavimento = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : pavimento
-    combpavimento = primeriflessioni : +~(_@((ma.SR / 1000.) * 8.731) : 
-    * (duratadecay) : onepolepavimento);
+    combpavimento = primeriflessioni : +~(_@(((ma.SR / 1000.) * 8.731)-1) : 
+    * (duratadecay) : onepolepavimento) : mem;
 
     // Filtro Lowpass (Onepole Filter) : soffitto
     onepolesoffitto = _*lowpasscut : +~(_ : *(1- lowpasscut));
     // Filtro Comb con Lowpass nella retroazione : soffitto
-    combsoffitto = primeriflessioni : +~(_@((ma.SR / 1000.) * 8.779) : 
-    * (duratadecay) : onepolesoffitto);
+    combsoffitto = primeriflessioni : +~(_@(((ma.SR / 1000.) * 8.779)-1) : 
+    * (duratadecay) : onepolesoffitto) : mem;
 
 
     outcombs = combfrontale + combposteriore + 
@@ -122,10 +123,9 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
         ALLPASS DOPO I 6 COMB
         */
         allpassuno = outcombs : 
-        (+ : _ <: @((ma.SR / 1000.) * 6.0), *(0.7)) ~ 
-        *(-0.7) : mem, _ : + : _;
+        (+ : _ <: @((ma.SR / 1000.) * 6.000 ), *(-0.7)) ~ *(0.7) : mem, _ : + : _;
 
-        delaycoda = allpassuno :@((ma.SR / 1000.) * 8.731);
+        delaycoda = allpassuno : @((ma.SR / 1000.) * 8.731);
 
         reverbout = primeriflessioni + delaycoda;
 
@@ -135,4 +135,4 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
 // uscita con il process:
 // viene usato il segnale in ingresso per testare.
 // moorer_reverb(gainearlyreflections, lowpasscut, duratadecay)
-process = _ <: moorer_reverb(0.1, 0.6, 0.990), moorer_reverb(0.1, 0.6, 0.992);
+process = _ <: moorer_reverb(0.05, 0.6, 0.98), moorer_reverb(0.05, 0.6, 0.98);
