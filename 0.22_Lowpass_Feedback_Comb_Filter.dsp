@@ -30,7 +30,7 @@ with{
     onepolefilter = _*lowpasscut : +~(_ : *(1- lowpasscut));
 
     // Filtro Comb con Lowpass nella retroazione --> (: onepolefilter)
-    combfunction = +~(_@(delaysamples-1) : *(feedback) : onepolefilter);
+    combfunction = +~(_@(delaysamples-1) : *(feedback) : onepolefilter) : mem;
     combfeedblowout = combfunction * outgain;
 
 };
