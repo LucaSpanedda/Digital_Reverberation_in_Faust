@@ -45,7 +45,7 @@ charmberlinallpass(delayinms, filtergain, ingain) = allpassout
         */
 
         allpassout = _ * ingain :
-        (+ : _ <: @(delaysamples), *(-filtergain)) ~ 
+        (+ : _ <: @(delaysamples -1), *(-filtergain)) ~ 
         *(filtergain) : mem, _ : + : _;
 
         };
