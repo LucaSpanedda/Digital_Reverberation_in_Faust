@@ -32,7 +32,7 @@ with{
     sulla funzione in uscita combfeedbout
     */
 
-    combfunction = +~(_@(delaysamples-1) : *(feedback));
+    combfunction = +~(_@(delaysamples-1) : *(feedback)) : mem;
     combfeedbout = combfunction * outgain;
     
 };
