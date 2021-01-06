@@ -40,26 +40,26 @@ girieciprianireverb(filtergain, reverbgain) = riverberoleft, riverberoright
 
 
         allpassuno = _ * reverbgain :
-        (+ : _ <: @((ma.SR / 1000.) * 49.960), *(-filtergain)) ~ 
+        (+ : _ <: @(((ma.SR / 1000.) * 49.960)-1), *(-filtergain)) ~ 
         *(filtergain) : mem, _ : + : _;
 
         allpassdue = allpassuno :
-        (+ : _ <: @((ma.SR / 1000.) * 54.650), *(-filtergain)) ~ 
+        (+ : _ <: @(((ma.SR / 1000.) * 54.650)-1), *(-filtergain)) ~ 
         *(filtergain) : mem, _ : + : _;
 
         allpasstre = allpassdue :
-        (+ : _ <: @((ma.SR / 1000.) * 24.180), *(-filtergain)) ~ 
+        (+ : _ <: @(((ma.SR / 1000.) * 24.180)-1), *(-filtergain)) ~ 
         *(filtergain) : mem, _ : + : _;
 
 
         // USCITE L & R.
         // SEZIONI DI DUE ALLPASS IN PARALLELO e seguito dei TRE ALLPASS
         riverberoleft = allpasstre :
-        (+ : _ <: @((ma.SR / 1000.) * 17.850), *(-filtergain)) ~ 
+        (+ : _ <: @(((ma.SR / 1000.) * 17.850)-1), *(-filtergain)) ~ 
         *(filtergain) : mem, _ : + : _;
 
         riverberoright = allpasstre :
-        (+ : _ <: @((ma.SR / 1000.) * 17.950), *(-filtergain)) ~ 
+        (+ : _ <: @(((ma.SR / 1000.) * 17.950)-1), *(-filtergain)) ~ 
         *(filtergain) : mem, _ : + : _;
 
     };
