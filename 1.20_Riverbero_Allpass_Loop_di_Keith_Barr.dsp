@@ -1,6 +1,6 @@
 import("stdfaust.lib");
 
-// Keith Barr Allpass Loop Reverb
+// Keith Barr Allpass Loop Reverb (WORK IN PROGRESS...)
 
 allpassfilter(delaysamples) = allpassout
     // allpassfilter include al suo interno:
