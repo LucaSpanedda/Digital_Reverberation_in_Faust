@@ -56,3 +56,7 @@ http://appuntimusicaelettronica.blogspot.com/2012/10/acusticariverbero.html
 9
 Algorithmic Reverbs: The Moorer Design
 https://christianfloisand.wordpress.com/2012/10/18/algorithmic-reverbs-the-moorer-design/
+
+10
+Tabella dei numeri primi inferiori a 10.000
+https://www.matematika.it/public/allegati/34/Numeri_primi_minori_di_10000_1_3.pdf
