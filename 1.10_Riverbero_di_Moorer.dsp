@@ -8,131 +8,81 @@ import("stdfaust.lib");
 
 
 /* 
-
 Simulazione di Riverbero secondo il modello di James A. Moorer
-il punto sorgente che coincide col punto di ascolto:
-
-in una stanza: 10metri x 5metri x 3metri.
-
-Ascoltatore/Sorgente posto al centro delle grandezze.
-Velocità del suono in aria a 20° : 343,1 METRI al SECONDO
-
-parete frontale a     5,0 METRI circa
-parete posteriore a   5,0 METRI circa
-parete sinistra a     2,5 METRI circa
-parete destra a       2,5 METRI circa
-soffitto a            1,5 METRI circa
-pavimento a           1,5 METRI circa
-
+il punto sorgente che coincide col punto di ascolto
 */
 
 
-// MOORER REVERB
 
-moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
-// MOORER REVERB include al suo interno:
+// ------------ FILTER SECTION ------------
+    // LOWPASS FEEDBACK COMB FILTER 
+    lfbcf(delsamps, g, lowcut) = 
+        // lfbcf(delay in samples, comb filter gain, lowcut)
+        (+ : @(delsamps-1) : _*lowcut : +~(_ : *(1- lowcut)))~ *(g) : mem;
+        // process = _ : lfbcf(3000, 0.999, 0.2) <:_,_;
+
+    // ALLPASS FILTER
+    apf(delaysamples, g) =
+          (+ : _ <: @(delaysamples-1), *(g)) ~ 
+         *(-g) : mem, _ : + : _;
+// ----------------------------------------
+
+
+// ------------ EARLY REFLECTIONS NETWORK -
+    early_reflections = reflections
+    with {
+        in_router(a,b,c,d,e,f,g) = a, b, c, d, e, f, g;
+        // process = in_router;
+
+        input = _ <: in_router;
+        //process = input;
+
+        // multitap delay lines (NO FEEDBACK)
+        multitap_delay(frnt,bck,sx,dx,up,dwn,direct) =
+        frnt@(4481) *0.2,
+        bck@(2713) *0.2,
+        sx@(3719) *0.2,
+        dx@(3739) *0.2,
+        up@(1877) *0.2,
+        dwn@(1783) *0.2,
+        direct *0.2;
+        //process = early_reflections;
+
+        out_router(a,b,c,d,e,f,g) = a+b+c+d+e+f+g;
+        //process = out_router;
+
+        // early reflections routing 
+        reflections = input : multitap_delay :> out_router;
+    };
+// ----------------------------------------
+
+// ------------ LATE REFLECTIONS NETWORK --
+    moorerverbtail = apf_section
     with{
+        in_router(a,b,c,d,e,f) = a, b, c, d, e, f;
+        //process = in_router;
 
-        // STANZA : 10metri x 5metri x 3metri.
-        // ----------------------------------------
-        /* 
-        6 EARLY REFLECTIONS
-        6 prime riflessioni per simulare il tempo di ritorno del suono da:
-        4 muri laterali, soffitto e pavimento.
-        Tutti i ritardi utilizzati vengono approssimati ad nel numero primo più vicino
-        */
+        // COMBS FILTER SECTION
+        comb_section =
+        lfbcf(4481, 0.98, 0.8),
+        lfbcf(2713, 0.98, 0.8),
+        lfbcf(3719, 0.98, 0.8),
+        lfbcf(3739, 0.98, 0.8),
+        lfbcf(1847, 0.98, 0.8),
+        lfbcf(1783, 0.98, 0.8);
+        //process = comb_section;
 
-        // tempo riflessione della parete frontale, approssimazione a numero primo
-        paretefrontale = _ * gainearlyreflections : @((ma.SR / 1000.) * 29.17);
+        out_router(a,b,c,d,e,f) = a+b+c+d+e+f;
+        //process = out_router;
 
-        // tempo riflessione della parete posteriore, approssimazione a numero primo
-        pareteposteriore = _ * gainearlyreflections : @((ma.SR / 1000.) * 29.09);
+        combsrouting =  early_reflections <: in_router : comb_section :> out_router;
+        //process = input;
 
-        // tempo riflessione della parete sinistra, approssimazione a numero primo
-        paretesinistra = _ * gainearlyreflections : @((ma.SR / 1000.) * 14.59);
+        apf_section = combsrouting : apf(556, 0.5) : @(4800);
+        //process = apf_section;
+    };
+// ----------------------------------------
 
-        // tempo riflessione della parete destra, approssimazione a numero primo
-        paretedestra = _ * gainearlyreflections : @((ma.SR / 1000.) * 14.53);
-
-        // tempo riflessione soffitto, approssimazione a numero primo
-        soffitto = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.731);
-
-        // tempo riflessione pavimento, approssimazione a numero primo
-        pavimento = _ * gainearlyreflections : @((ma.SR / 1000.) * 8.779);
-
-
-        // uscita delle prime riflessioni
-        primeriflessioni =   _ * gainearlyreflections
-                                + paretefrontale + pareteposteriore 
-                                + paretesinistra + paretedestra 
-                                + soffitto + pavimento;
-        
-
-    // ----------------------------------------
-    /* 
-    6 FILTRI COMB CON LOWPASS IIR DEL PRIMO ORDINE
-    (lowpass per simulare assorbimento frequenze alte dell'aria)
-    i ritardi dei ricircoli sono gli stessi delle prime riflessioni.
-    Tutti i ritardi nei comb tengono conto delle pareti e delle early reflections
-    */
-
-    // Filtro Lowpass (Onepole Filter) : parete frontale
-    onepolefrontale = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione : parete frontale
-    combfrontale = primeriflessioni : +~(_@(((ma.SR / 1000.) * 29.17)-1) : 
-    * (duratadecay) : onepolefrontale) : mem;
-
-    // Filtro Lowpass (Onepole Filter) : parete posteriore
-    onepoleposteriore = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione : parete posteriore
-    combposteriore = primeriflessioni : +~(_@(((ma.SR / 1000.) * 29.09)-1) : 
-    * (duratadecay) : onepoleposteriore) : mem;
-
-    // Filtro Lowpass (Onepole Filter) : parete sinistra
-    onepolesinistra = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione : parete sinistra
-    combsinistra = primeriflessioni : +~(_@(((ma.SR / 1000.) * 14.59)-1) : 
-    * (duratadecay) : onepolesinistra) : mem;
-
-    // Filtro Lowpass (Onepole Filter) : parete destra
-    onepoledestra = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione : parete destra
-    combdestra = primeriflessioni : +~(_@(((ma.SR / 1000.) * 14.53)-1) : 
-    * (duratadecay) : onepoledestra) : mem;
-
-    // Filtro Lowpass (Onepole Filter) : pavimento
-    onepolepavimento = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione : pavimento
-    combpavimento = primeriflessioni : +~(_@(((ma.SR / 1000.) * 8.731)-1) : 
-    * (duratadecay) : onepolepavimento) : mem;
-
-    // Filtro Lowpass (Onepole Filter) : soffitto
-    onepolesoffitto = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione : soffitto
-    combsoffitto = primeriflessioni : +~(_@(((ma.SR / 1000.) * 8.779)-1) : 
-    * (duratadecay) : onepolesoffitto) : mem;
-
-
-    outcombs = combfrontale + combposteriore + 
-                combsinistra + combdestra +
-                combpavimento + combsoffitto;
-
-
-        // ----------------------------------------
-        /* 
-        ALLPASS DOPO I 6 COMB
-        */
-        allpassuno = outcombs : 
-        (+ : _ <: @((ma.SR / 1000.) * 6.000 ), *(-0.7)) ~ *(0.7) : mem, _ : + : _;
-
-        delaycoda = allpassuno : @((ma.SR / 1000.) * 8.731);
-
-        reverbout = primeriflessioni + delaycoda;
-
-};
-
-
-// uscita con il process:
-// viene usato il segnale in ingresso per testare.
-// moorer_reverb(gainearlyreflections, lowpasscut, duratadecay)
-process = os.impulse <: moorer_reverb(0.5, 0.7, 0.99), moorer_reverb(0.5, 0.7, 0.99);
+// ------------ OUT PATH ------------------
+moorerverb = _<: moorerverbtail + early_reflections;
+process = os.impulse : moorerverb <: _,_;
