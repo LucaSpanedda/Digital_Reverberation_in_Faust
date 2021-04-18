@@ -108,5 +108,5 @@ freeverbjezar(gain_input, lowpasscut, duratadecay) = freeverbout
 // uscita con il process:
 // viene usato il segnale in ingresso per testare.
 // freeverbjezar(gain segnale input, taglio filtro lowpass, decadimento)
-process = _ <: freeverbjezar(0.2, 0.2, 0.84), 
-                freeverbjezar(0.2, 0.2, 0.84);
+process = os.impulse <: freeverbjezar(0.8, 0.7, 0.992), 
+                freeverbjezar(0.8, 0.7, 0.992);
