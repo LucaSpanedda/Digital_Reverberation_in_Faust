@@ -8,7 +8,6 @@ Questo lavoro si divide principalmente in due sezioni:
 
 Referenze principali del repository:
 
-1 
 Introduction to Digital Filters: 
 With Audio Applications.
 Libro di Julius O. Smith III.
@@ -22,41 +21,35 @@ https://ccrma.stanford.edu/~jos/fp/
 su DSP Related
 https://www.dsprelated.com/freebooks.php
 
-2
 ARTIFICIAL REVERBERATION: su DSPRELATED
 https://www.dsprelated.com/freebooks/pasp/Artificial_Reverberation.html
 
-3
 Corey Kereliuk - Building a Reverb Plugin in Faust
 Keith Barr’s reverb architecture
 http://blog.reverberate.ca/post/faust-reverb/
 
-4
 Spin Semiconductor DSP Basics
 http://www.spinsemi.com/knowledge_base/dsp_basics.html
 Spin Semiconductor Audio Effects
 http://www.spinsemi.com/knowledge_base/effects.html#Reverberation
 
-5
 freeverb3vst - Reverb Algorithms Tips 
 http://freeverb3vst.osdn.jp/tips/reverb.shtml
 
-6
 History of allpass loop / "ring" reverbs
 http://www.spinsemi.com/forum/viewtopic.php?p=555&sid=5d31391b3883f1b9e013d5af80805019
 
-7
 Musical Applications of Microprocessors (The Hayden microcomputer series) 
 http://sites.music.columbia.edu/cmc/courses/g6610/fall2016/week8/Musical_Applications_of_Microprocessors-Charmberlin.pdf
 
-8
 acustica_Riverbero - Alfredo Ardia
 http://appuntimusicaelettronica.blogspot.com/2012/10/acusticariverbero.html
 
-9
 Algorithmic Reverbs: The Moorer Design
 https://christianfloisand.wordpress.com/2012/10/18/algorithmic-reverbs-the-moorer-design/
 
-10
+Dattorro Convex Optimization of a Reverberator
+https://www.convexoptimization.com/wikimization/index.php/Dattorro_Convex_Optimization_of_a_Reverberator
+
 Tabella dei numeri primi inferiori a 10.000
 https://www.matematika.it/public/allegati/34/Numeri_primi_minori_di_10000_1_3.pdf
