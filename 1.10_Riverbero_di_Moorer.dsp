@@ -135,4 +135,4 @@ moorer_reverb(gainearlyreflections, lowpasscut, duratadecay) = reverbout
 // uscita con il process:
 // viene usato il segnale in ingresso per testare.
 // moorer_reverb(gainearlyreflections, lowpasscut, duratadecay)
-process = _ <: moorer_reverb(0.05, 0.6, 0.98), moorer_reverb(0.05, 0.6, 0.98);
+process = os.impulse <: moorer_reverb(0.5, 0.7, 0.99), moorer_reverb(0.5, 0.7, 0.99);
