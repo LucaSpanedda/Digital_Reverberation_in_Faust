@@ -21,6 +21,9 @@ https://ccrma.stanford.edu/~jos/fp/
 su DSP Related
 https://www.dsprelated.com/freebooks.php
 
+TOM ERBE - UC SAN DIEGO - REVERB TOPOLOGIES AND DESIGN
+http://tre.ucsd.edu/wordpress/wp-content/uploads/2018/10/reverbtopo.pdf
+
 ARTIFICIAL REVERBERATION: su DSPRELATED
 https://www.dsprelated.com/freebooks/pasp/Artificial_Reverberation.html
 
