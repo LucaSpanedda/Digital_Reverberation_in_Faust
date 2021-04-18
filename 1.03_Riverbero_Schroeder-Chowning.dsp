@@ -66,5 +66,5 @@ schroederchowning(gain_input) = schroederchowningout
 
 // uscita con il process con controllo gain:
 // viene usato il segnale in ingresso per testare.
-process = _ <: schroederchowning(0.2), 
+process = os.impulse <: schroederchowning(0.2), 
                 schroederchowning(0.2);
