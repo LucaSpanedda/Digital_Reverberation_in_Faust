@@ -93,4 +93,4 @@ charmberlinleftout, charmberlinrightout
 // viene usato il segnale in ingresso per testare 
 // il riverbero digitale in uscita
 // controllo dell'ampiezza del riverbero , e gain.
-process = charmberlindecayfixreverb(0.90, 1.);
+process = os.impulse : charmberlindecayfixreverb(0.90, 1.);
