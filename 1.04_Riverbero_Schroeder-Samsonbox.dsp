@@ -76,5 +76,5 @@ schroedersamson(gain_input) = schroedersamsonout
 
 // uscita con il process con controllo gain:
 // viene usato il segnale in ingresso per testare.
-process = _ <: schroedersamson(0.2), 
+process = os.impulse <: schroedersamson(0.2), 
                 schroedersamson(0.2);
