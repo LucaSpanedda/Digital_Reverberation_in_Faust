@@ -9,60 +9,30 @@ import("stdfaust.lib");
 /* 
 Simulazione delle prime riflessioni in una stanza con
 il punto sorgente che coincide col punto di ascolto:
-Stanza: 10metri x 5metri x 3metri
-Ascoltatore/Sorgente posto al centro delle grandezze.
-Velocità del suono in aria a 20° : 343,1 METRI al SECONDO
-
-parete frontale a     5,0 METRI circa
-parete posteriore a   5,0 METRI circa
-parete sinistra a     2,5 METRI circa
-parete destra a       2,5 METRI circa
-soffitto a            1,5 METRI circa
-pavimento a           1,5 METRI circa
 */
 
 
-// PRIME RIFLESSIONI
-earlyreflections(earlyreflectgain) = primeriflessioniout
-    // earlyreflections include al suo interno:
-    with{
+// col router definisco gli input che mi devo passare dentro il codice
+// in questo caso 7 input: (a,b,c,d,e,f,g)
+in_router(a,b,c,d,e,f,g) = a, b, c, d, e, f, g;
+// process = router;
 
-        /* 
-        Conversione Campioni in ms. :
-        inserisco il tempo in Millisecondi 
-        e la funzione mi tira fuori il valore in campioni:
-        delaysamples = (ma.SR / 1000.) * delayinms;
-        */
+// mando il segnale in ingresso ai 7 input del router
+input = _ <: in_router;
+//process = input;
 
-        // tempo riflessione della parete frontale:             29.1460216 ms.
-        paretefrontale = _ * earlyreflectgain : @((ma.SR / 1000.) * 29.1460216);
+// definisco le prime riflessioni - multitap delay lines (NO FEEDBACK)
+multitap_delay(frnt,bck,sx,dx,up,dwn,direct) =
+frnt@(4481),bck@(2713),sx@(3719),dx@(3739),up@(1877),dwn@(659),direct;
+//process = early_reflections;
 
-        // tempo riflessione della parete posteriore:           29.0000000 ms.
-        pareteposteriore = _ * earlyreflectgain : @((ma.SR / 1000.) * 29.0000000);
+// definisco un router per l'output che prenda 7 ingressi e li sommi
+// in un unica uscita
+out_router(a,b,c,d,e,f,g) = a+b+c+d+e+f+g;
+//process = earlyrelfect_router;
 
-        // tempo riflessione della parete sinistra:             14.5730108 ms.
-        paretesinistra = _ * earlyreflectgain : @((ma.SR / 1000.) * 14.5730108);
+// definisco una funzione dove esplico il percorso del segnale
+early_reflections = input : multitap_delay :> out_router;
 
-        // tempo riflessione della parete destra:               14.0000000 ms.
-        paretedestra = _ * earlyreflectgain : @((ma.SR / 1000.) * 14.0000000);
-
-        // tempo riflessione soffitto:                          8.00000000 ms.
-        soffitto = _ * earlyreflectgain : @((ma.SR / 1000.) * 8.00000000);
-
-        // tempo riflessione pavimento:                         8.74380648 ms.
-        pavimento = _ * earlyreflectgain : @((ma.SR / 1000.) * 8.74380648);
-
-
-        // uscita delle prime riflessioni
-        primeriflessioniout = _ + paretefrontale + pareteposteriore +
-                                  paretesinistra + paretedestra +
-                                  soffitto + pavimento;
-
-};
-
-
-// uscita con il process:
-// viene usato il segnale in ingresso per testare 
-// il riverbero digitale in uscita: input segnale su due canali out,
-// controllo dell'ampiezza delle prime riflessioni.
-process = _ <: earlyreflections(1.), earlyreflections(1.);
+// output e test con un impulso di dirac (1 sample)
+process = os.impulse : early_reflections  <: _,_;
