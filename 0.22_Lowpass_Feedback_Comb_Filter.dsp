@@ -9,13 +9,8 @@ import("stdfaust.lib");
 Controlli del filtro:
 delaysamples = campioni di ritardo nella retroazione
 feedback = gain della retroazione col ritardo
-outgain = gain generale all'uscita del filtro
 lowpasscut = taglio frequenza tramite filtro onepole 
 */
-
-combfeedbacklowpassfilter(delaysamples, feedback, outgain, lowpasscut) = combfeedblowout
-// combfeedbacklowpassfilter include al suo interno:
-with{
 
     /* 
     come filtro comb, ma all'interno della retroazione,
@@ -26,17 +21,12 @@ with{
     ecco perché delaysamples-1.
     */
 
-    // Filtro Lowpass (Onepole Filter)
-    onepolefilter = _*lowpasscut : +~(_ : *(1- lowpasscut));
-
-    // Filtro Comb con Lowpass nella retroazione --> (: onepolefilter)
-    combfunction = +~(_@(delaysamples-1) : *(feedback) : onepolefilter) : mem;
-    combfeedblowout = combfunction * outgain;
-
-};
-
-
+    // LOWPASS FEEDBACK COMB FILTER 
+    lfbcf(delsamps, g, lowcut) = 
+    // lfbcf(delay in samples, comb filter gain, lowcut)
+    (+ : @(delsamps-1) : _*lowcut : +~(_ : *(1- lowcut)))~ *(g) : mem;
+    // process = _ : lfbcf(3000, 0.999, 0.2) <:_,_;
+        
 // uscita con il process:
 // viene usato il segnale in ingresso per testare il filtro in uscita
-process = _ <: combfeedbacklowpassfilter(4200, 0.98, 0., 0.15), //out 1
-                        combfeedbacklowpassfilter(4000, 0.98, 0., 0.15); //out 2
+process = os.impulse : lfbcf(3000, 0.999, 0.2) <:_,_;
