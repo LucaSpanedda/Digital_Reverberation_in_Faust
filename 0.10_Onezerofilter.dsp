@@ -11,10 +11,6 @@ filtergain = gain della sezione in ritardo
 outgain = gain generale all'uscita del filtro 
 */
 
-onezerofilter(feedforward, outgain) = onezeroout
-// onezerofilter include al suo interno:
-with{
-
     /* 
     _ è il segnale in ingresso, (_ rappresentazione segnale)
     viene a seguito diviso in due percorsi paralleli <: 
@@ -29,12 +25,8 @@ with{
     sulla funzione in uscita onezeroout
     */
 
-   onezerofunction = _ <: ( _' * feedforward ), _ :> _ ;
-   onezeroout = onezerofunction * outgain;
-   
-};
-
+   onezerofilter(feedforward, outgain) = _ <: ( _' * feedforward ), _ :> + : *(outgain);
 
 // uscita con il process:
 // viene usato un noise per testare il filtro in questa uscita
-process = no.noise : onezerofilter(1, 0.) <: _,_;
+process = no.noise : onezerofilter(1, 0.1) <: _,_;
