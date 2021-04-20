@@ -37,5 +37,4 @@ with{
 
 // uscita con il process:
 // viene usato un noise per testare il filtro in questa uscita
-process = no.noise <: onezerofilter(1, 0.), //out 1
-			onezerofilter(1, 0.); //out 2
+process = no.noise : onezerofilter(1, 0.) <: _,_;
