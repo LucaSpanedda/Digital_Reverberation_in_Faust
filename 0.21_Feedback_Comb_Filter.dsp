@@ -5,16 +5,13 @@ import("stdfaust.lib");
 // FEEDBACK COMB FILTER (IIR di N° Ordine)
 // ----------------------------------------
 
+
+
 /* 
 Controlli del filtro:
 delaysamples = campioni di ritardo nella retroazione
 feedback = gain della retroazione col ritardo
-outgain = gain generale all'uscita del filtro 
 */
-
-combfeedbackfilter(delaysamples, feedback, outgain) = combfeedbout
-// combfeedbackfilter include al suo interno:
-with{
 
     /* 
     +~ è il sommatore, e la retroazione 
@@ -31,14 +28,13 @@ with{
     c'è un controllo di ampiezza generale * outgain
     sulla funzione in uscita combfeedbout
     */
-
-    combfunction = +~(_@(delaysamples-1) : *(feedback)) : mem;
-    combfeedbout = combfunction * outgain;
     
-};
-
+    // FEEDBACK COMB FILTER 
+    feedbckcombfilter(delsamps, g) = 
+    // feedbckcombfilter(delay in samples, comb filter gain)
+    _ : (+  @(delsamps-1)~ *(g)) : mem;
+    // process = os.impulse : feedbckcombfilter(4481, 0.9) <: _,_;
 
 // uscita con il process:
 // viene usato il segnale in ingresso per testare il filtro in uscita
-process = _ <: combfeedbackfilter(3400, 0.92, 0.4), //out 1
-			combfeedbackfilter(3200, 0.92, 0.4); //out 2
+process = os.impulse : feedbckcombfilter(4481, 0.9) <: _,_;
