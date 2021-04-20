@@ -11,10 +11,6 @@ feedback = gain della retroazione col ritardo
 outgain = gain generale all'uscita del filtro 
 */
 
-onepolefilter(feedback, outgain) = onepoleout
-// onepolefilter include al suo interno:
-with{
-
     /* 
     +~ è il sommatore, e la retroazione 
     degli argomenti dentro parentesi ()
@@ -27,13 +23,8 @@ with{
     sulla funzione in uscita onezeroout
     */
 
-    onepolefunction = _*feedback : +~(_ : *(1- feedback));
-    onepoleout = onepolefunction * outgain;
-    
-};
-
+    onepolefilter(feedback, outgain) = _*feedback : +~(_ : *(1- feedback)) : *(outgain);
 
 // uscita con il process:
 // viene usato un noise per testare il filtro in questa uscita
-process = no.noise <: onepolefilter(0.005, 0.), //out 1
-			onepolefilter(0.005, 0.); //out 2
+process = no.noise : onepolefilter(0.005, 0.) <: _,_;
