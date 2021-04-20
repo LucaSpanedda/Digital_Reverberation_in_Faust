@@ -15,8 +15,10 @@ Illustreremo 3 Metodi principali:
 1 - Scrivere la riga di codice con recorsività interne:
     in questo modo l'operatore tilde ~ manda il segnale
     in uscita all'interno di se stesso, al primo ingresso
-    disponibile. Creando un circuito di retroazione (feedback)
-
+    disponibile. Creando un circuito di retroazione (feedback).
+    Un modo per forzare l'operatore a puntare in un certo punto
+    del codice, è mettere le parentesi (), in questo modo ~
+    punterà all'ingresso prima della parentesi.
 
 2 - Un secondo metodo consiste nell'utilizzo del with{} .
     Si può definire una funzione in cui vengono passati
@@ -35,6 +37,10 @@ Illustreremo 3 Metodi principali:
 
         dove out_with ~ _ rientra in se stesso.
 
+Inoltre il with in Faust permette di dichiarare delle variabili
+che non vengono puntate dall'esterno del codice ma solo
+dalla funzione di appartenenza; in questo caso
+la funzione a cui appartiene il with è "funzione_with".
 
 3 - Un terzo metodo è utilizzare l'ambiente letrec.
     con questo metodo possiamo scrivere un segnale
