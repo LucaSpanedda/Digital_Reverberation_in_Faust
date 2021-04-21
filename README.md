@@ -4,8 +4,8 @@ Esperimenti e algoritmi di modelli di riverberazione digitale in linguaggio FAUS
 Questo lavoro si divide principalmente in due sezioni:
   - dopo il file di presentazione
   https://github.com/LucaSpanedda/Riverberazione_Digitale_in_FAUST/blob/main/0.00_Riverberi_Digitali.md
-1. - La sezione filtri, dove vengono creati vari filtri che verranno poi usati nei modelli di riverbero.
-2. - La sezione riverberi, dove i filtri vengono applicati per creare i diversi modelli di riverberazione.
+1. - La sezione filtri 0.01-0.99: dove vengono creati vari filtri che verranno poi usati nei modelli di riverbero.
+2. - La sezione riverberi 1.00-1.99: dove i filtri vengono applicati per creare i diversi modelli di riverberazione.
 Ogni file è sia guida che esecutivo.
 
 
