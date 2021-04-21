@@ -1,12 +1,15 @@
-# Riverberazione_Digitale_in_FAUST
+# Riverberazione Digitale in FAUST
 Esperimenti e algoritmi di modelli di riverberazione digitale in linguaggio FAUST (GRAME)
 
 Questo lavoro si divide principalmente in due sezioni:
-1 - La sezione filtri, dove vengono creati vari filtri che verranno poi usati nei modelli di riverbero
-2 - La sezione riverberi, dove i filtri vengono applicati per creare i diversi modelli di riverberazione
+  - dopo il file di presentazione
+  https://github.com/LucaSpanedda/Riverberazione_Digitale_in_FAUST/blob/main/0.00_Riverberi_Digitali.md
+1. - La sezione filtri, dove vengono creati vari filtri che verranno poi usati nei modelli di riverbero.
+2. - La sezione riverberi, dove i filtri vengono applicati per creare i diversi modelli di riverberazione.
+Ogni file è sia guida che esecutivo.
 
 
-Referenze principali del repository:
+### Referenze principali
 
 Introduction to Digital Filters: 
 With Audio Applications.
@@ -45,7 +48,7 @@ http://www.spinsemi.com/forum/viewtopic.php?p=555&sid=5d31391b3883f1b9e013d5af80
 Musical Applications of Microprocessors (The Hayden microcomputer series) 
 http://sites.music.columbia.edu/cmc/courses/g6610/fall2016/week8/Musical_Applications_of_Microprocessors-Charmberlin.pdf
 
-acustica_Riverbero - Alfredo Ardia
+Acustica_Riverbero - Alfredo Ardia
 http://appuntimusicaelettronica.blogspot.com/2012/10/acusticariverbero.html
 
 Algorithmic Reverbs: The Moorer Design
