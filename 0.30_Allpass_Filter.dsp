@@ -27,10 +27,8 @@ filtergain = gain IIR & FIR del filtro
         in coda, prima della somma di uscita dell'allpass
         */
 
-        // ALLPASS FILTER
-        apf(delaysamples, g) =
-        (+ : _ <: @(delaysamples-1), *(g)) ~ *(-g) : mem, _ : + : _;
+// (t,g) = give: delay in samples, feedback gain 0-1
+apf(t,g) = (+: _<: @(t-1), *(g))~ *(-g) : mem, _ : + : _;
 
 // uscita con il process:
-// viene usato il segnale in ingresso per testare il filtro in uscita
 process = os.impulse : apf(4200, 0.9) <: _,_;
