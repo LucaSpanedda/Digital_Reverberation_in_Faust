@@ -27,8 +27,9 @@ outgain = gain generale all'uscita del filtro
     sulla funzione in uscita onezeroout
     */
 
-   onezerofilter(feedforward, outgain) = _ <: ( _' * feedforward ), _ :> + : *(outgain);
+// (g) = give amplitude 0-1(open-close) to the delayed signal
+ozf(g) = _<:(mem*g), _ :> +;
 
 // uscita con il process:
 // viene usato un noise per testare il filtro in questa uscita
-process = no.noise : onezerofilter(1, 0.1) <: _,_;
+process = no.noise : ozf(0.1) <: _,_;
