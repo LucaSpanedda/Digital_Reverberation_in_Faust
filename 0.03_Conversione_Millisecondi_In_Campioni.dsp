@@ -2,7 +2,7 @@
 import("stdfaust.lib");
 
 // ----------------------------------------
-// CONVERSIONE CAMPIONI IN MILLISECONDI
+// CONVERSIONE MILLISECONDI IN CAMPIONI
 // ----------------------------------------
 
 
@@ -30,13 +30,7 @@ dalla funzione, 480 campioni ad una frequenza di campionamento
 di 48.000 campioni al secondo.
 */
 
-msacampioni(tempoinmillisecondi) = mscampioniout
-// msacampioni include al suo interno:
-with{
-
-        mscampioniout = (ma.SR / 1000.) * tempoinmillisecondi;
-
-};
-
+// (t) = give time in milliseconds we want to know in samples
+msasamps(t) = (ma.SR / 1000.) * t;
 
 process = _;
