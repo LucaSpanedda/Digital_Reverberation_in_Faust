@@ -9,7 +9,7 @@ import("stdfaust.lib");
 /* 
 Inserisci all'interno degli argomenti della funzione:
 
-    - il valore in millisecondi del filtro 
+    - il valore in campioni del filtro 
     che stai usando per il ritardo.
 
     - il valore di decadimento in T60
@@ -21,20 +21,8 @@ Inserisci all'interno degli argomenti della funzione:
     il tempo di decadimento T60 che si desidera
 */
 
-
-decadimentot60(delay_millisecondi_filtro, secondi_decayt60_desiderati) = outdecayt60
-// decadimentot60 include al suo interno:
-with{
-
-    // delay del filtro in ms.
-    delfiltroinms = delay_millisecondi_filtro/1000;
-    // 3 * delaydelfiltro / T60 desiderato
-    esponente = (3*delfiltroinms)/secondi_decayt60_desiderati;
-    // 10 alla -esponente
-    outdecayt60 = 1/(10^esponente);
-
-};
+// (samps,seconds) = give: samples of the filter, seconds we want for t60 decay
+dect60(samps,seconds) = 1/(10^((3*(((1000 / 44100)*samps)/1000))/seconds));
 
 
-// tempo in ms ritardo, tempo T60 desiderato.
-process = decadimentot60(51, 10);
+process = _;
