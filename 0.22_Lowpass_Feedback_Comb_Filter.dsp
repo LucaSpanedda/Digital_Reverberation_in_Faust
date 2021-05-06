@@ -23,12 +23,8 @@ lowpasscut = taglio frequenza tramite filtro onepole
     ecco perché delaysamples-1.
     */
 
-    // LOWPASS FEEDBACK COMB FILTER 
-    lfbcf(delsamps, g, lowcut) = 
-    // lfbcf(delay in samples, comb filter gain, lowcut)
-    (+ : @(delsamps-1) : _*lowcut : +~(_ : *(1- lowcut)))~ *(g) : mem;
-    // process = _ : lfbcf(3000, 0.999, 0.2) <:_,_;
+// (t,g,cut) = give: delay samps, feedback gain 0-1, lowpass cut 1-0(open-close)
+lfbcf(t,g,cut) = (+ : @(t-1) : _*cut : +~(_ : *(1-cut)))~ *(g) : mem;
         
 // uscita con il process:
-// viene usato il segnale in ingresso per testare il filtro in uscita
 process = os.impulse : lfbcf(3000, 0.999, 0.2) <:_,_;
