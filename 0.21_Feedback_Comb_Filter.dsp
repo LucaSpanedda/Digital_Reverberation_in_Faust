@@ -29,12 +29,8 @@ feedback = gain della retroazione col ritardo
     sulla funzione in uscita combfeedbout
     */
     
-    // FEEDBACK COMB FILTER 
-    feedbckcombfilter(delsamps, g) = 
-    // feedbckcombfilter(delay in samples, comb filter gain)
-    _ : (+  @(delsamps-1)~ *(g)) : mem;
-    // process = os.impulse : feedbckcombfilter(4481, 0.9) <: _,_;
+// (t,g) = give: delay time in samples, feedback gain 0-1
+fbcf(t,g) = _ : (+  @(t-1)~ *(g)) : mem;
 
 // uscita con il process:
-// viene usato il segnale in ingresso per testare il filtro in uscita
-process = os.impulse : feedbckcombfilter(4481, 0.9) <: _,_;
+process = os.impulse : fbcf(4481, 0.9) <: _,_;
