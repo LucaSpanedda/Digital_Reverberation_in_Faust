@@ -25,8 +25,9 @@ outgain = gain generale all'uscita del filtro
     sulla funzione in uscita onezeroout
     */
 
-    onepolefilter(feedback, outgain) = _*feedback : +~(_ : *(1- feedback)) : *(outgain);
+// (g) = give amplitude 1-0(open-close) for the lowpass cut
+opf(g) = _*g : +~(_ : *(1- g));
 
 // uscita con il process:
 // viene usato un noise per testare il filtro in questa uscita
-process = no.noise : onepolefilter(0.005, 0.) <: _,_;
+process = no.noise : opf(0.005) <: _,_;
