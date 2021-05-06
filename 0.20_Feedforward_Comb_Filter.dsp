@@ -2,7 +2,7 @@
 import("stdfaust.lib");
 
 // ----------------------------------------
-// FASTFORWARD COMB FILTER (FIR di N° Ordine)
+// FEEDFORWARD COMB FILTER (FIR of N° Order)
 // ----------------------------------------
 
 /* 
@@ -11,10 +11,6 @@ delaysamples = campioni di ritardo nel fastforward
 feedback = gain della retroazione col ritardo
 outgain = gain generale all'uscita del filtro 
 */
-
-combfastforwardfilter(delaysamples, feedforward, outgain) = combfastout
-// combfastforwardfilter include al suo interno:
-with{
 
     /* 
     _ è il segnale in ingresso, (_ rappresentazione segnale)
@@ -34,13 +30,9 @@ with{
     sulla funzione in uscita onezeroout
     */
 
-   combfastfunction = _ <: ( _@(delaysamples-1) * feedforward ), _ :> _ ;
-   combfastout = combfastfunction * outgain;
-
-};
-
+// (t,g) = delay time in samples, filter gain 0-1
+ffcf(t,g) = _ <: ( _@(t-1) *g), _ :> _;
 
 // uscita con il process:
 // viene usato un noise per testare il filtro in questa uscita
-process = no.noise <: combfastforwardfilter(100, 0.9, 0.), //out 1
-			combfastforwardfilter(100, 0.9, 0.); //out 2
+process = no.noise : ffcf(100, 0.9) <: _,_;
