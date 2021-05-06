@@ -49,11 +49,11 @@ ozf(g) = _<:(mem*g), _ :> +;
 // ONEPOLE FILTER (IIR of I° Order)
 //------------------------------------------------------------------------------
 // (g) = give amplitude 1-0(open-close) for the lowpass cut
-oplf(g) = _*g : +~(_ : *(1- g));
+opf(g) = _*g : +~(_ : *(1- g));
 //
 //
 //------------------------------------------------------------------------------
-// FASTFORWARD COMB FILTER (FIR of N° Order)
+// FEEDFORWARD COMB FILTER (FIR of N° Order)
 //------------------------------------------------------------------------------
 // (t,g) = delay time in samples, filter gain 0-1
 ffcf(t,g) = _ <: ( _@(t-1) *g), _ :> _;
