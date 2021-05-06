@@ -38,13 +38,7 @@ corrisponde una durata temporale più piccola del singolo campione,
 e dunque una definizione maggiore.
 */
 
-campioniams(totaleincampioni) = campionimsout
-// msacampioni include al suo interno:
-with{
-
-        campionimsout = (1000 / ma.SR) * totaleincampioni;
-
-};
-
+// (samps) = give tot. samples we want to know in milliseconds
+sampsams(samps) = ((1000 / ma.SR) * samps);
 
 process = _;
