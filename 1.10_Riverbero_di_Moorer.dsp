@@ -1,9 +1,9 @@
-// Importo libreria standard di FAUST
-import("stdfaust.lib");
-
 // ----------------------------------------
 // RIVERBERO DI MOORER
 // ----------------------------------------
+
+// Importo libreria standard di FAUST
+import("stdfaust.lib");
 
 
 
