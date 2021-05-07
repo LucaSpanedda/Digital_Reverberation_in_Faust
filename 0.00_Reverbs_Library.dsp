@@ -91,14 +91,14 @@ apf(t,g) = (+: _<: @(t-1), *(g))~ *(-g) : mem, _ : + : _;
 // ALLPASS FILTER - fixed - POSITIVE FEEDBACK
 //------------------------------------------------------------------------------
 // (t,g) = give: delay in samples, feedback gain 0-1
-apffp(t,g) = (+: _<: @(t-1), *(g))~ *(-g) : mem, _ : + : _;
+apffp(t,g) = (+: _<: @(min(max(t-1,0),ma.SR)), *(-g))~ *(g) : mem, _ : + : _;
 //
 //
 //------------------------------------------------------------------------------
 // ALLPASS FILTER - fixed - NEGATIVE FEEDBACK
 //------------------------------------------------------------------------------
 // (t,g) = give: delay in samples, feedback gain 0-1
-apffp(t,g) = (+: _<: @(t-1), *(-g))~ *(g) : mem, _ : + : _;
+apffn(t,g) = (+: _<: @(min(max(t-1,0),ma.SR)), *(g))~ *(-g) : mem, _ : + : _;
 //
 //
 
