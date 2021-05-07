@@ -8,24 +8,31 @@ import("stdfaust.lib");
 //-UTILITIES--------------------------------------------------------------------
 //
 //------------------------------------------------------------------------------
-// CONVERSION MILLISECONDS TO SAMPLES
+// CONVERSION MILLISECONDS to SAMPLES
 //------------------------------------------------------------------------------
 // (t) = give time in milliseconds we want to know in samples
 msasamps(t) = (ma.SR / 1000.) * t;
 //
 //
 //------------------------------------------------------------------------------
-// CONVERSION SAMPLES TO MILLISECONDS
+// CONVERSION SAMPLES to MILLISECONDS
 //------------------------------------------------------------------------------
 // (samps) = give tot. samples we want to know in milliseconds
 sampsams(samps) = ((1000 / ma.SR) * samps);
 //
 //
 //------------------------------------------------------------------------------
-// T60 DECAY TIME
+// T60 DECAY TIME from SAMPLES
 //------------------------------------------------------------------------------
 // (samps,seconds) = give: samples of the filter, seconds we want for t60 decay
-dect60(samps,seconds) = 1/(10^((3*(((1000 / 44100)*samps)/1000))/seconds));
+dect60(samps,seconds) = 1/(10^((3*(((1000 / ma.SR)*samps)/1000))/seconds));
+//
+//
+//------------------------------------------------------------------------------
+// T60 DECAY TIME from MILLISECONDS
+//------------------------------------------------------------------------------
+// (ms,seconds) = give: ms delay of the filter, seconds we want for t60 decay
+dect60(ms,seconds) = 1/(10^((3*(ms/1000))/seconds));
 //
 //
 //------------------------------------------------------------------------------
