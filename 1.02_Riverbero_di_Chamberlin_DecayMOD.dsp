@@ -1,96 +1,33 @@
-// Importo libreria standard di FAUST
+// ----------------------------------------
+// CHAMBERLIN REVERB
+// with T60 Decay
+// ----------------------------------------
+
+// FAUST standard library
 import("stdfaust.lib");
 
-// ----------------------------------------
-// RIVERBERO DI CHAMBERLIN 
-// con MODIFICA controllo del decadimento
-// ----------------------------------------
+// MS TO SAMPLES
+// (t) = give time in milliseconds we want to know in samples
+msasamps(t) = (ma.SR/1000)*t;
 
+// ALLPASS CHAMBERLIN
+// (t,g) = give: delay in samples, feedback gain 0-1
+apffp(t,g) = (+: _<: @(min(max(t-1,0),ma.SR)), *(-g))~ *(g) : mem, _ : + : _;
 
-/* 
-Controlli del filtro:
-filtergain = tempo di decadimento del riverbero
-            (gain IIR & FIR del filtro) tra 0.min e 1.max
-*/
+// T60 DECAY TIME from MILLISECONDS
+// (ms,seconds) = give: ms delay of the filter, seconds we want for t60 decay
+dect60(ms,seconds) = 1/(10^((3*(ms/1000))/seconds));
 
-// RIVERBERO DI ALLPASS DI HAL CHAMBERLIN
-charmberlindecayfixreverb(filtergain, reverbgain) = 
-charmberlinleftout, charmberlinrightout
-    // allpassfilter include al suo interno:
-    with{
-
-        /* 
-        Conversione Campioni in millisecondi: 
-        samples ritardo = (ma.SR / 1000.) * ritardo espresso in ms.
-        inserisco il tempo in Millisecondi 
-        e la funzione mi tira fuori il valore in campioni
-        */
-
-
-        /* 
-        dalla somma (+ si passa : ad un cavo _ ed uno split <:
-        poi
-        @ritardo e gain, in retroazione ~ alla somma iniziale.
-        filtergain controlla l'ampiezza dei due stati di guadagno, 
-        che sono nel filtro lo stesso valore ma positivo e negativo,
-        da una parte *-filtergain e da una parte *+filtergain.
-        Nel feedback è già presente di default un campione di ritardo,
-        ecco perché delaysamples-1.
-        Per mantenere invece la soglia di ritardo del valore delaysamples,
-        viene aggiunto un ritardo mem (del campione sottratto)
-        in coda, prima della somma di uscita dell'allpass
-        */
-
-
-        // TRE ALLPASS IN SERIE
-
-        allpassuno = _ * reverbgain:
-        (+ : _ <: @((ma.SR / 1000.) * 49.600), *(-filtergain)) ~ 
-        *(filtergain) : mem, _ : + : _; 
-
-        allpassdue = allpassuno : 
-        (+ : _ <: @((ma.SR / 1000.) * 34.650), *(-filtergain)) ~ 
-        *(filtergain) : mem, _ : + : _; 
-
-        allpasstre = allpassdue :
-        (+ : _ <: @((ma.SR / 1000.) * 24.180), *(-filtergain)) ~ 
-        *(filtergain) : mem, _ : + : _;
-
-
-
-        // USCITE L & R.
-        // DUE SEZIONI IN PARALLELO DI DUE ALLPASS IN SERIE
-
-        // chamberlin L reverb include al suo interno:
-        riverberoleftuno = allpasstre :
-        (+ : _ <: @((ma.SR / 1000.) * 17.850), *(-filtergain)) ~ 
-        *(filtergain) : mem, _ : + : _;
-
-        riverberoleftdue = riverberoleftuno :
-        (+ : _ <: @((ma.SR / 1000.) * 10.980), *(-filtergain)) ~ 
-        *(filtergain) : mem, _ : + : _;
-
-        charmberlinleftout = riverberoleftdue;
-
-
-        // chamberlin R reverb include al suo interno:
-        riverberorightuno = allpasstre :
-        (+ : _ <: @((ma.SR / 1000.) * 18.010), *(-filtergain)) ~ 
-        *(filtergain) : mem, _ : + : _;
-
-        riverberorightdue = riverberorightuno :
-        (+ : _ <: @((ma.SR / 1000.) * 10.820), *(-filtergain)) ~ 
-        *(filtergain) : mem, _ : + : _;
-
-        charmberlinrightout = riverberorightdue;
-
-
+// CHAMBERLIN REVERB
+// (seconds) = give: decay time in seconds of 60dB
+chamberlindecay(seconds) = ap3ch <: apout1ch, apout2ch
+with{
+ap3ch = apffp(msasamps(49.6),dect60(49.6,seconds)) : 
+apffp(msasamps(34.75),dect60(34.75,seconds)) : 
+apffp(msasamps(24.18),dect60(24.18,seconds));
+apout1ch = apffp(msasamps(17.85),dect60(17.85,seconds)) : 
+apffp(msasamps(10.98),dect60(10.98,seconds));
+apout2ch = apffp(msasamps(18.01),dect60(18.01,seconds)) : 
+apffp(msasamps(10.82),dect60(10.82,seconds));
 };
-
-
-
-// uscita con il process:
-// viene usato il segnale in ingresso per testare 
-// il riverbero digitale in uscita
-// controllo dell'ampiezza del riverbero , e gain.
-process = os.impulse <: charmberlindecayfixreverb(0.90, 1.);
+process = chamberlindecay(10);
