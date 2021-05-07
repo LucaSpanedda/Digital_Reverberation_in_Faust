@@ -87,6 +87,20 @@ lfbcf(t,g,cut) = (+ : @(t-1) : _*cut : +~(_ : *(1-cut)))~ *(g) : mem;
 apf(t,g) = (+: _<: @(t-1), *(g))~ *(-g) : mem, _ : + : _;
 //
 //
+//------------------------------------------------------------------------------
+// ALLPASS FILTER - fixed - POSITIVE FEEDBACK
+//------------------------------------------------------------------------------
+// (t,g) = give: delay in samples, feedback gain 0-1
+apffp(t,g) = (+: _<: @(t-1), *(g))~ *(-g) : mem, _ : + : _;
+//
+//
+//------------------------------------------------------------------------------
+// ALLPASS FILTER - fixed - NEGATIVE FEEDBACK
+//------------------------------------------------------------------------------
+// (t,g) = give: delay in samples, feedback gain 0-1
+apffp(t,g) = (+: _<: @(t-1), *(-g))~ *(g) : mem, _ : + : _;
+//
+//
 
 
 //-REVERBERATORS----------------------------------------------------------------
@@ -97,16 +111,11 @@ apf(t,g) = (+: _<: @(t-1), *(g))~ *(-g) : mem, _ : + : _;
 // High-quality stereo reverberator:
 // Musical Applications of Microprocessor
 //------------------------------------------------------------------------------
-//
-// allpass chamberlin
-// (t,g) = give: delay in samples, feedback gain 0-1
-apfch(t,g) = (+: _<: @(min(max(t-1,0),ma.SR)), *(-g))~ *(g) : mem, _ : + : _;
-//
-// chamberlin reverb
-ap3ch = apfch(msasamps(49.6),0.75) : 
-apfch(msasamps(34.75),0.72) : apfch(msasamps(24.18),0.691);
-apout1ch = apfch(msasamps(17.85),0.649) : apfch(msasamps(10.98),0.662);
-apout2ch = apfch(msasamps(18.01),0.646) : apfch(msasamps(10.82),0.666);
+// chamberlinverb
+ap3ch = apffp(msasamps(49.6),0.75) : 
+apffp(msasamps(34.75),0.72) : apffp(msasamps(24.18),0.691);
+apout1ch = apffp(msasamps(17.85),0.649) : apffp(msasamps(10.98),0.662);
+apout2ch = apffp(msasamps(18.01),0.646) : apffp(msasamps(10.82),0.666);
 chamberlinverb = ap3ch <: apout1ch, apout2ch;
 //
 //
