@@ -1,9 +1,9 @@
-// Importo libreria standard di FAUST
-import("stdfaust.lib");
-
 // ----------------------------------------
 // FREEVERB di Jezar at Dreampoint
 // ----------------------------------------
+
+// Importo libreria standard di FAUST
+import("stdfaust.lib");
 
 
 
@@ -14,99 +14,83 @@ ed 8 Schroeder-Moorer Filtered-feedback comb-filters in parallelo.
 */
 
 
-// FREEVERB
 
-freeverbjezar(gain_input, lowpasscut, duratadecay) = freeverbout
-// freeverbjezar include al suo interno:
+// ------------ FILTER SECTION ------------
+    // LOWPASS FEEDBACK COMB FILTER 
+    lfbcf(delsamps, g, lowcut) = 
+        // lfbcf(delay in samples, comb filter gain, lowcut)
+        (+ : @(delsamps-1) : _*lowcut : +~(_ : *(1- lowcut)))~ *(g) : mem;
+        // process = _ : lfbcf(3000, 0.999, 0.2) <:_,_;
+
+    // ALLPASS FILTER
+    apf(delaysamples, g) =
+          (+ : _ <: @(delaysamples-1), *(g)) ~ 
+         *(-g) : mem, _ : + : _;
+// ----------------------------------------
+
+// ------------ EARLY REFLECTIONS NETWORK -
+    early_reflections = reflections
+    with {
+        in_router(a,b,c,d,e,f,g) = a, b, c, d, e, f, g;
+        // process = in_router;
+
+        input = _ <: in_router;
+        //process = input;
+
+        // multitap delay lines (NO FEEDBACK)
+        multitap_delay(frnt,bck,sx,dx,up,dwn,direct) =
+        frnt@(1617) *0.4,
+        bck@(1557) *0.4,
+        sx@(1491) *0.4,
+        dx@(1422) *0.4,
+        up@(1277) *0.4,
+        dwn@(1356) *0.4,
+        direct *0.2;
+        //process = early_reflections;
+
+        out_router(a,b,c,d,e,f,g) = a+b+c+d+e+f+g;
+        //process = out_router;
+
+        // early reflections routing 
+        reflections = input : multitap_delay :> out_router;
+    };
+// ----------------------------------------
+
+// ------------ LATE REFLECTIONS NETWORK --
+    freeverbtail = apf_section
     with{
+        in_router(a,b,c,d,e,f,g,h) = a, b, c, d, e, f, g, h;
+        //process = in_router;
 
-    // ----------------------------------------
-    /* 
-    8 FILTRI COMB PARALLELI CON LOWPASS IIR DEL PRIMO ORDINE
-    (lowpass per simulare assorbimento frequenze alte dell'aria)
-    */
+        // COMBS FILTER SECTION
+        comb_section =
+        lfbcf(1557, 0.84, 0.2),
+        lfbcf(1617, 0.84, 0.2),
+        lfbcf(1491, 0.84, 0.2),
+        lfbcf(1422, 0.84, 0.2),
+        lfbcf(1277, 0.84, 0.2),
+        lfbcf(1356, 0.84, 0.2),
+        lfbcf(1188, 0.84, 0.2),
+        lfbcf(1116, 0.84, 0.2);
+        //process = comb_section;
 
-    // Input segnale e controllo gain
-    ingressosegnale = _*gain_input;
+        out_router(a,b,c,d,e,f,g,h) = a+b+c+d+e+f+g+h;
+        //process = out_router;
 
-    // Filtro Lowpass (Onepole Filter) 
-    onepoleuno = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione 
-    combuno = ingressosegnale: +~(_@(1557 -1) : 
-    * (duratadecay) : onepoleuno) : mem;
+        combsrouting =  early_reflections <: in_router : comb_section :> out_router;
+        //process = input;
 
-    // Filtro Lowpass (Onepole Filter) 
-    onepoledue = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione 
-    combdue = ingressosegnale: +~(_@(1617 -1) : 
-    * (duratadecay) : onepoledue) : mem;
+        apf_section = combsrouting : 
+        apf(225, 0.5) : apf(556, 0.5) : apf(441, 0.5) : apf(341, 0.5);
+        //process = apf_section;
+    };
+// ----------------------------------------
 
-    // Filtro Lowpass (Onepole Filter) 
-    onepoletre = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione 
-    combtre = ingressosegnale: +~(_@(1491 -1) : 
-    * (duratadecay) : onepoletre) : mem;
+// ------------ OUT PATH ------------------
+freeverb = _<: freeverbtail + early_reflections;
+process = freeverb <: _,_;
 
-    // Filtro Lowpass (Onepole Filter) 
-    onepolequattro = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione 
-    combquattro = ingressosegnale: +~(_@(1422 -1) : 
-    * (duratadecay) : onepolequattro) : mem;
-
-    // Filtro Lowpass (Onepole Filter) 
-    onepolecinque = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione 
-    combcinque = ingressosegnale: +~(_@(1277 -1) : 
-    * (duratadecay) : onepolecinque) : mem;
-
-    // Filtro Lowpass (Onepole Filter) 
-    onepolesei = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione 
-    combsei = ingressosegnale: +~(_@(1356 -1) : 
-    * (duratadecay) : onepolesei) : mem;
-
-    // Filtro Lowpass (Onepole Filter) 
-    onepolesette = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione 
-    combsette = ingressosegnale: +~(_@(1188 -1) : 
-    * (duratadecay) : onepolesette) : mem;
-
-    // Filtro Lowpass (Onepole Filter) 
-    onepoleotto = _*lowpasscut : +~(_ : *(1- lowpasscut));
-    // Filtro Comb con Lowpass nella retroazione 
-    combotto = ingressosegnale: +~(_@(1116 -1) : 
-    * (duratadecay) : onepoleotto) : mem;
-
-
-    combsparalleli = combuno + combdue + combtre + combquattro
-                    + combcinque + combsei + combsette + combotto;
-
-
-        // ----------------------------------------
-        /* 
-        4 ALLPASS IN SERIE DOPO I COMB
-        */
-
-        allpassuno = combsparalleli : 
-        (+ : _ <: @(225 -1), *(-0.5)) ~ *(0.5) : mem, _ : + : _;
-
-        allpassdue = allpassuno : 
-        (+ : _ <: @(556 -1), *(-0.5)) ~ *(0.5) : mem, _ : + : _;
-
-        allpasstre = allpassdue : 
-        (+ : _ <: @(441 -1), *(-0.5)) ~ *(0.5) : mem, _ : + : _;
-
-        allpassquattro = allpasstre : 
-        (+ : _ <: @(341 -1), *(-0.5)) ~ *(0.5) : mem, _ : + : _;
-
-        freeverbout = allpassquattro;
-
-};
-
-
-
-// uscita con il process:
-// viene usato il segnale in ingresso per testare.
-// freeverbjezar(gain segnale input, taglio filtro lowpass, decadimento)
-process = os.impulse <: freeverbjezar(0.8, 0.7, 0.992), 
-                freeverbjezar(0.8, 0.7, 0.992);
+// Freeverb mono channel. 
+// Processing for the second channel is obtained by adding 
+// an integer to each of the twelve delay-line lengths. 
+// This integer is called stereospread, and its default value is 23.
