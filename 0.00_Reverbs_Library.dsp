@@ -11,14 +11,14 @@ import("stdfaust.lib");
 // CONVERSION MILLISECONDS to SAMPLES
 //------------------------------------------------------------------------------
 // (t) = give time in milliseconds we want to know in samples
-msasamps(t) = (ma.SR / 1000.) * t;
+msasamps(t) = (ma.SR/1000)*t : int;
 //
 //
 //------------------------------------------------------------------------------
 // CONVERSION SAMPLES to MILLISECONDS
 //------------------------------------------------------------------------------
 // (samps) = give tot. samples we want to know in milliseconds
-sampsams(samps) = ((1000 / ma.SR) * samps);
+sampsams(samps) = ((1000/ma.SR)*samps) : int;
 //
 //
 //------------------------------------------------------------------------------
@@ -56,32 +56,32 @@ wall(meters) = ((ma.SR/1000.)*((1000*meters)/343.1)*2);
 // ONEZERO FILTER (FIR of I° Order)
 //------------------------------------------------------------------------------
 // (g) = give amplitude 0-1(open-close) to the delayed signal
-ozf(g) = _<:(mem*g), _ :> +;
+ozf(g) = _<:(mem*g), _ :>;
 //
 //
 //------------------------------------------------------------------------------
-// ONEPOLE FILTER (IIR of I° Order)
+// ONEPOLE FILTER (IIR of 1 sample delay)
 //------------------------------------------------------------------------------
 // (g) = give amplitude 1-0(open-close) for the lowpass cut
 opf(g) = _*g : +~(_ : *(1- g));
 //
 //
 //------------------------------------------------------------------------------
-// FEEDFORWARD COMB FILTER (FIR of N° Order)
+// FEEDFORWARD COMB FILTER (FIR of N° sample delay)
 //------------------------------------------------------------------------------
 // (t,g) = delay time in samples, filter gain 0-1
 ffcf(t,g) = _ <: ( _@(t-1) *g), _ :> _;
 //
 //
 //------------------------------------------------------------------------------
-// FEEDBACK COMB FILTER (IIR of N° Order)
+// FEEDBACK COMB FILTER (IIR of N° sample delay)
 //------------------------------------------------------------------------------
 // (t,g) = give: delay time in samples, feedback gain 0-1
 fbcf(t,g) = _ : (+  @(t-1)~ *(g)) : mem;
 //
 //
 //------------------------------------------------------------------------------
-// LOWPASS FEEDBACK COMB FILTER (IIR of N° Order)
+// LOWPASS FEEDBACK COMB FILTER (IIR of N° sample delay)
 //------------------------------------------------------------------------------
 // (t,g,cut) = give: delay samps, feedback gain 0-1, lowpass cut 1-0(open-close)
 lfbcf(t,g,cut) = (+ : @(t-1) : _*cut : +~(_ : *(1-cut)))~ *(g) : mem;
