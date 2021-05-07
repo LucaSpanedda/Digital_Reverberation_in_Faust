@@ -1,9 +1,10 @@
-// Importo libreria standard di FAUST
-import("stdfaust.lib");
-
 // ----------------------------------------
 // SCHROEDER SAMSON BOX REVERBERATOR
 // ----------------------------------------
+
+
+// Importo libreria standard di FAUST
+import("stdfaust.lib");
 
 
 
@@ -15,54 +16,44 @@ Modello SATREV, basato sul modello riverberante di Schroeder.
 */
 
 
-// SCHROEDER REVERB IN SAMSON BOX IMPLEMENTATION
 
-schroedersamson(gain_input) = schroedersamsonout
-// schroedersamson include al suo interno:
-    with{
+// ------------ FILTER SECTION ------------
+// FEEDBACK COMB FILTER 
+// (t,g) = give: delay time in samples, feedback gain 0-1
+fbcf(t,g) = _ : (+  @(t-1)~ *(g)) : mem;
 
-        // ----------------------------------------
-        /* 
-        3 ALLPASS IN SERIE PRIMA DEI COMB
-        */
-
-        // Input segnale e controllo gain
-        ingressosegnale = _*gain_input;
-
-        allpassuno = ingressosegnale : 
-        (+ : _ <: @(1051 -1), *(-0.7)) ~ *(0.7) : mem, _ : + : _;
-
-        allpassdue = allpassuno : 
-        (+ : _ <: @(337 -1), *(-0.7)) ~ *(0.7) : mem, _ : + : _;
-
-        allpasstre = allpassdue : 
-        (+ : _ <: @(113 -1), *(-0.7)) ~ *(0.7) : mem, _ : + : _;
-
-        allpassout = allpasstre;
+// ALLPASS FILTER
+// (t,g) = give: delay in samples, feedback gain 0-1
+apffp(t,g) = (+: _<: @(min(max(t-1,0),ma.SR)), *(-g))~ *(g) : mem, _ : + : _;
+// ----------------------------------------
 
 
-    // ----------------------------------------
-    /* 
-    4 FILTRI COMB PARALLELI DOPO GLI ALLPASS
-    */
-
-    // Filtro Comb 
-    combuno = allpassout: +~(_@(4799 -1) : *(0.742)) : mem;
-
-    // Filtro Comb 
-    combdue = allpassout: +~(_@(4999 -1) : *(0.733)) : mem;
-
-    // Filtro Comb 
-    combtre = allpassout: +~(_@(5399 -1) : *(0.715)) : mem;
-
-    // Filtro Comb 
-    combquattro = allpassout: +~(_@(5801 -1) : *(0.697)) : mem;
+// ------------ ALLPASS SECTION -----------
+schroederallp = apffp(1051,0.7):apffp(337,0.7):apffp(113,0.7);
+// ----------------------------------------
 
 
-    combsparalleli = combuno + combdue + combtre + combquattro;
-    schroedersamsonout = combsparalleli;
+// ------------ COMB SECTION --------------
+    schroeder4comb = combsection 
+    with {
+    // ROUTING PARALLELO
+    in_router(a,b,c,d)= a, b, c, d;
+    input = _ <: in_router;
 
-};
+    // 4 FILTRI COMB PARALLELI 
+    combs=fbcf(4799,0.742),fbcf(4999,0.733),fbcf(5399,0.715),fbcf(5801,0.697);
+
+    // SUM SEGNALI PARALLELI
+    out_router(a,b,c,d) = a+b+c+d;
+    // COMBS OUT
+    combsection = input : combs :> out_router;
+    };
+// ----------------------------------------
+
+
+// ------------ OUT PATH ------------------
+samsonboxverb = _ : schroederallp : schroeder4comb;
+process = samsonboxverb <: _,_;
 
 // Sarebbe necessario decorrelare in uscita le somme dei comb
 // per avere un buon effetto spaziale.
@@ -72,9 +63,3 @@ schroedersamson(gain_input) = schroedersamsonout
 // B = z-0.057fs
 // C = z-0.041fs
 // D = z-0.054fs
-
-
-// uscita con il process con controllo gain:
-// viene usato il segnale in ingresso per testare.
-process = os.impulse <: schroedersamson(0.2), 
-                schroedersamson(0.2);
