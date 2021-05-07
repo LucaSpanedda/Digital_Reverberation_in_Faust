@@ -1,9 +1,9 @@
-// Importo libreria standard di FAUST
-import("stdfaust.lib");
-
 // ----------------------------------------
 // SCHROEDER-CHOWNING SATREV REVERBERATOR
 // ----------------------------------------
+
+// Importo libreria standard di FAUST
+import("stdfaust.lib");
 
 
 
@@ -14,57 +14,41 @@ Modello SATREV, basato sul modello riverberante di Schroeder.
 */
 
 
-// SCHROEDER REVERB IN JOHN CHOWNING IMPLEMENTATION
 
-schroederchowning(gain_input) = schroederchowningout
-// schroederchowning include al suo interno:
-    with{
+// ------------ FILTER SECTION ------------
+// FEEDBACK COMB FILTER 
+// (t,g) = give: delay time in samples, feedback gain 0-1
+fbcf(t,g) = _ : (+  @(t-1)~ *(g)) : mem;
 
-    // ----------------------------------------
-    /* 
-    4 FILTRI COMB PARALLELI 
-    */
-
-    // Input segnale e controllo gain
-    ingressosegnale = _*gain_input;
-
-    // Filtro Comb 
-    combuno = ingressosegnale: +~(_@(901 -1) : *(0.805)) : mem;
-
-    // Filtro Comb 
-    combdue = ingressosegnale: +~(_@(778 -1) : *(0.827)) : mem;
-
-    // Filtro Comb 
-    combtre = ingressosegnale: +~(_@(1011 -1) : *(0.783)) : mem;
-
-    // Filtro Comb 
-    combquattro = ingressosegnale: +~(_@(1123 -1) : *(0.764)) : mem;
+// ALLPASS FILTER
+// (t,g) = give: delay in samples, feedback gain 0-1
+apffp(t,g) = (+: _<: @(min(max(t-1,0),ma.SR)), *(-g))~ *(g) : mem, _ : + : _;
+// ----------------------------------------
 
 
-    combsparalleli = combuno + combdue + combtre + combquattro;
+// ------------ COMB SECTION --------------
+    schroeder4comb = combsection 
+    with {
+    // ROUTING PARALLELO
+    in_router(a,b,c,d)= a, b, c, d;
+    input = _ <: in_router;
+
+    // 4 FILTRI COMB PARALLELI 
+    combs=fbcf(901,0.805),fbcf(778,0.827),fbcf(1011,0.783),fbcf(1123,0.764);
+
+    // SUM SEGNALI PARALLELI
+    out_router(a,b,c,d) = a+b+c+d;
+    // COMBS OUT
+    combsection = input : combs :> out_router;
+    };
+// ----------------------------------------
 
 
-        // ----------------------------------------
-        /* 
-        3 ALLPASS IN SERIE DOPO I COMB
-        */
-
-        allpassuno = combsparalleli : 
-        (+ : _ <: @(125 -1), *(-0.7)) ~ *(0.7) : mem, _ : + : _;
-
-        allpassdue = allpassuno : 
-        (+ : _ <: @(42 -1), *(-0.7)) ~ *(0.7) : mem, _ : + : _;
-
-        allpasstre = allpassdue : 
-        (+ : _ <: @(12 -1), *(-0.7)) ~ *(0.7) : mem, _ : + : _;
-
-        schroederchowningout = allpasstre;
-
-};
+// ------------ ALLPASS SECTION -----------
+schroederallp = apffp(125,0.7):apffp(42,0.7):apffp(12,0.7);
+// ----------------------------------------
 
 
-
-// uscita con il process con controllo gain:
-// viene usato il segnale in ingresso per testare.
-process = os.impulse <: schroederchowning(0.2), 
-                schroederchowning(0.2);
+// ------------ OUT PATH ------------------
+satreverb = _ : schroeder4comb : schroederallp;
+process = satreverb <: _,_;
