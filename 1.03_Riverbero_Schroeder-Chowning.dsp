@@ -51,4 +51,4 @@ schroederallp = apffp(125,0.7):apffp(42,0.7):apffp(12,0.7);
 
 // ------------ OUT PATH ------------------
 satreverb = _ : schroeder4comb : schroederallp;
-process = satreverb <: _,_;
+process = os.impulse : satreverb <: _,_;
