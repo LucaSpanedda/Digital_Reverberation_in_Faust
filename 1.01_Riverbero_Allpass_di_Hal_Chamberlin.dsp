@@ -21,4 +21,4 @@ ap3ch = apfch(msasamps(49.6),0.75) :
 apfch(msasamps(34.75),0.72) : apfch(msasamps(24.18),0.691);
 apout1ch = apfch(msasamps(17.85),0.649) : apfch(msasamps(10.98),0.662);
 apout2ch = apfch(msasamps(18.01),0.646) : apfch(msasamps(10.82),0.666);
-process = ap3ch <: apout1ch, apout2ch;
+process = os.impulse : ap3ch <: apout1ch, apout2ch;
