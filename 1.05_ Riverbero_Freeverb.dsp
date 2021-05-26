@@ -88,7 +88,7 @@ ed 8 Schroeder-Moorer Filtered-feedback comb-filters in parallelo.
 
 // ------------ OUT PATH ------------------
 freeverb = _<: freeverbtail + early_reflections;
-process = freeverb <: _,_;
+process = os.impulse : freeverb <: _,_;
 
 // Freeverb mono channel. 
 // Processing for the second channel is obtained by adding 
