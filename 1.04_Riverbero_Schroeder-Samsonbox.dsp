@@ -53,7 +53,8 @@ schroederallp = apffp(1051,0.7):apffp(337,0.7):apffp(113,0.7);
 
 // ------------ OUT PATH ------------------
 samsonboxverb = _ : schroederallp : schroeder4comb;
-process = samsonboxverb <: _,_;
+process = os.impulse : samsonboxverb <: _,_;
+
 
 // Sarebbe necessario decorrelare in uscita le somme dei comb
 // per avere un buon effetto spaziale.
