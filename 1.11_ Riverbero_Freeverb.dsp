@@ -8,9 +8,19 @@ import("stdfaust.lib");
 
 
 /* 
-Simulazione di Riverbero secondo il modello di Jezar at Dreampoint.
-Utilizza 4 Allpass di Schroeder in serie, 
+Simulazione di Riverbero di Schroeder/Moorer secondo il 
+modello di Jezar at Dreampoint. Utilizza 4 Allpass di Schroeder in serie, 
 ed 8 Schroeder-Moorer Filtered-feedback comb-filters in parallelo.
+-------------------------------------------
+Nel 1979 nella sua pubblicazione ”About This Reverberation Business” James
+Moorer, seguendo le proposte esposte da Schroeder nel suo articolo, 
+implementa a seguito una topologia che fa uso delle TDL (tapped delay lines) 
+per una simulazione delle prime riflessioni, 
+ed inserisce all’interno della retroazione del FBCF 
+(feedback comb filter) un filtro Lowpass, 
+creando così i filtri LBCF(lowpass feedback comb filter) per ottenere 
+una simulazione di assorbimento dell’aria all’interno 
+del suo modello di riverberazione.
 */
 
 
