@@ -13,6 +13,14 @@ Simulazione di Riverbero secondo il modello della
 Samson Box - 1977 CCRMA.
 Modello SATREV, basato sul modello riverberante di Schroeder.
 3 Allpass in serie e 4 Comb IIR Paralleli.
+-------------------------------------------
+Nel 1962 Manfred Schroeder propone un’applicazione efficiente di riverberazione 
+digitale nel suo articolo “Natural Sounding Artificial Reverb”. 
+Schroeder propone l’utilizzo di filtri allpass e comb combinati fra di loro 
+per ottenere un riverbero che non colori (grazie ai filtri allpass) 
+e che crei una densità degli echi sufficiente a simulare la complessità 
+delle riflessioni date da un effetto di riverberazione naturale
+(almeno 1000 echi per secondo)
 */
 
 
