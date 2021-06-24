@@ -11,6 +11,14 @@ import("stdfaust.lib");
 Simulazione di Riverbero secondo il modello di John Chowning.
 Modello SATREV, basato sul modello riverberante di Schroeder.
 4 Comb IIR Paralleli e 3 Allpass in serie.
+-------------------------------------------
+Nel 1962 Manfred Schroeder propone un’applicazione efficiente di riverberazione 
+digitale nel suo articolo “Natural Sounding Artificial Reverb”. 
+Schroeder propone l’utilizzo di filtri allpass e comb combinati fra di loro 
+per ottenere un riverbero che non colori (grazie ai filtri allpass) 
+e che crei una densità degli echi sufficiente a simulare la complessità 
+delle riflessioni date da un effetto di riverberazione naturale
+(almeno 1000 echi per secondo)
 */
 
 
