@@ -12,10 +12,10 @@ import("stdfaust.lib");
 /* 
 Nel 1982 Stautner e Puckette presentano nella 
 loro pubblicazione ”Designing multichannel reverberators” 
-un algoritmo di riverberazione multicanalechiamato: 
+un algoritmo di riverberazione multicanale chiamato: 
 ”Feedback Delay Network” che tende a voler simulare 
 il comportamento delle riﬂessioni all’interno di una stanza, 
-utilizzando solo una seriedi ﬁltri comb ﬁlter paralleli, 
+utilizzando solo una serie di ﬁltri comb paralleli
 ma con le retroazioni interconnesse fra loro.
 Qui una implementazione di una FDN a soli due Comb Filter.
 */
