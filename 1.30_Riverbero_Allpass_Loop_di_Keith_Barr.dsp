@@ -9,9 +9,9 @@ with{
 };
 		
 		// tempo decadimento
-        krt = 0.4;
+        krt = 0.9;
 
-        lrtap(dl,dr) = _ <: @(dl), @(dr) <: +,_,_;
+        lrtap(dl,dr) = _@(dr) <: _,_,_;
         //process = lrtap(7,14);
 
         // section 1
@@ -25,4 +25,4 @@ with{
     sect4(x,y) = x+y,_,_ : (apf(3049) : apf(1987)),_,_ : lrtap(911,997),_,_ : router : *(krt),_,_;
     kbreverb = (sect1 : sect2 : sect3 : sect4)~_ : !,_,_;
 
-    process = os.impulse : kbreverb;
+    process = _ : kbreverb;
