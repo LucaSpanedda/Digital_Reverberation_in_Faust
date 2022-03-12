@@ -1,0 +1,84 @@
+// FAUST standard library
+import("stdfaust.lib");
+lsrev = library("lsrev.lib");
+
+// LUCA-SPANEDDA-DIGITAL-REVERBS-LIBRARY ---------------------------------------
+// lsrev.lib = library ---- lsrev.function for recall a function ---------------
+
+
+// UTILITIES--------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+// CONVERSION MILLISECONDS to SAMPLES
+//------------------------------------------------------------------------------
+// (t) = give time in milliseconds we want to know in samples
+Mstosamps(t) = (ma.SR/1000)*t : int;
+//
+//
+//------------------------------------------------------------------------------
+// CONVERSION SAMPLES to MILLISECONDS
+//------------------------------------------------------------------------------
+// (samps) = give tot. samples we want to know in milliseconds
+Sampstoms(samps) = ((1000/ma.SR)*samps) : int;
+//
+//
+//------------------------------------------------------------------------------
+// T60 DECAY TIME from SAMPLES
+//------------------------------------------------------------------------------
+// (samps,seconds) = give: samples of the filter, seconds we want for t60 decay
+T60samps(samps,seconds) = 1/(10^((3*(((1000 / ma.SR)*samps)/1000))/seconds));
+//
+//
+//------------------------------------------------------------------------------
+// T60 DECAY TIME from MILLISECONDS
+//------------------------------------------------------------------------------
+// (ms,seconds) = give: ms delay of the filter, seconds we want for t60 decay
+T60ms(ms,seconds) = 1/(10^((3*(ms/1000))/seconds));
+//
+//
+//------------------------------------------------------------------------------
+// DIRAC IMPULSE (1 SAMPLE IMPULSE)
+//------------------------------------------------------------------------------
+Dirac = 1-(1:mem);
+//
+//
+//------------------------------------------------------------------------------
+// SOUND TO THE WALL AND BACK TIME
+//------------------------------------------------------------------------------
+// (meters) = give a distance in meters for samples of the filter
+Meterstosamps(meters) = ((ma.SR/1000.)*((1000*meters)/343.1)*2);
+//
+//
+
+
+//-FILTERS----------------------------------------------------------------------
+//
+//------------------------------------------------------------------------------
+// ONEZERO FILTER (FIR of I° Order)
+//------------------------------------------------------------------------------
+// (g) = give amplitude 0-1(open-close) to the delayed signal 
+// (g) = +1 lowpass, (g) = -1 highpass
+Ozf(g) = _ <: (mem*g), _ :> +;
+//
+//
+//------------------------------------------------------------------------------
+// ONEPOLE FILTER (IIR of 1 sample delay)
+//------------------------------------------------------------------------------
+// (g) = give amplitude 1-0(open-close) for the lowpass cut
+Opf(g) = _*g : +~ (_ : *(1- g));
+// only the pole section
+Op(g) = + ~ *(g);
+//
+//
+//------------------------------------------------------------------------------
+// DC BLOCKER
+//------------------------------------------------------------------------------
+// The dc blocker is a small recursive filter specified by the difference equation
+// It is needed to remove the dc component of the signal.
+// y(n) = x(n) -x(n-1)+Ry(n-1)
+// R is a parameter that is typically somewhere between 0.9 and 1.0
+// reference : 
+// https://ccrma.stanford.edu/~jos/fp/DC_Blocker.html
+DCblocker = Ozf(-1) : Op(0.998);
+//
+//
