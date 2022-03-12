@@ -43,7 +43,7 @@ Dirac = 1-(1:mem);
 //
 //
 //------------------------------------------------------------------------------
-// SOUND TO THE WALL AND BACK TIME
+// METERS TO SAMPLES (SOUND TO THE WALL AND BACK TIME)
 //------------------------------------------------------------------------------
 // (meters) = give a distance in meters for samples of the filter
 Meterstosamps(meters) = ((ma.SR/1000.)*((1000*meters)/343.1)*2);
@@ -80,5 +80,47 @@ Op(g) = + ~ *(g);
 // reference : 
 // https://ccrma.stanford.edu/~jos/fp/DC_Blocker.html
 DCblocker = Ozf(-1) : Op(0.998);
+//
+//
+//------------------------------------------------------------------------------
+// FEEDFORWARD COMB FILTER (FIR of N° sample delay)
+//------------------------------------------------------------------------------
+// (t,g) = delay time in samples, filter gain 0-1
+Ffcf(t,g) = _ <: ( _@(t-1) *g), _ :> _;
+//
+//
+//------------------------------------------------------------------------------
+// FEEDBACK COMB FILTER (IIR of N° sample delay)
+//------------------------------------------------------------------------------
+// (t,g) = give: delay time in samples, feedback gain 0-1
+Fbcf(t,g) = _ : (+  @(t-1)~ *(g)) : mem;
+//
+//
+//------------------------------------------------------------------------------
+// LOWPASS FEEDBACK COMB FILTER (IIR of N° sample delay)
+//------------------------------------------------------------------------------
+// (t,g,cut) = give: delay samps, feedback gain 0-1, lowpass cut 1-0(open-close)
+Lfbcf(t,g,cut) = (+ : @(t-1) : _*cut : +~(_ : *(1-cut)))~ *(g) : mem;
+//
+//
+//------------------------------------------------------------------------------
+// ALLPASS FILTER (FIR + IIR COMB FILTER)
+//------------------------------------------------------------------------------
+// (t,g) = give: delay in samples, feedback gain 0-1
+Apf(t,g) = (+: _<: @(t-1), *(g))~ *(-g) : mem, _ : + : _;
+//
+//
+//------------------------------------------------------------------------------
+// ALLPASS FILTER - fixed - POSITIVE FEEDBACK
+//------------------------------------------------------------------------------
+// (t,g) = give: delay in samples, feedback gain 0-1
+Apffp(t,g) = (+: _<: @(min(max(t-1,0),ma.SR)), *(-g))~ *(g) : mem, _ : + : _;
+//
+//
+//------------------------------------------------------------------------------
+// ALLPASS FILTER - fixed - NEGATIVE FEEDBACK
+//------------------------------------------------------------------------------
+// (t,g) = give: delay in samples, feedback gain 0-1
+Apffn(t,g) = (+: _<: @(min(max(t-1,0),ma.SR)), *(g))~ *(-g) : mem, _ : + : _;
 //
 //
