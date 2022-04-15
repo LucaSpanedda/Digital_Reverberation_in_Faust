@@ -6,7 +6,7 @@ import("stdfaust.lib");
 
 Reverb(IN) = KBReverb
 with{
-APF(delaysamples) = (+ : _ <: @(delaysamples-1), *(0.5)) ~ *(-0.5) : mem, _ : + : _;
+    APF(delaysamples) = (+ : _ <: @(delaysamples-1), *(0.5)) ~ *(-0.5) : mem, _ : + : _;
 
     Decorrelation(L1,R1,L2,R2,L3,R3,L4,R4) = 
     (delay(L1,Lsum_1)+delay(L2,Lsum_2)+delay(L3,Lsum_3)+delay(L4,Lsum_4))/4,
@@ -23,26 +23,26 @@ APF(delaysamples) = (+ : _ <: @(delaysamples-1), *(0.5)) ~ *(-0.5) : mem, _ : + 
     Sect_D = IN+_ : APF(APF_D1) : APF(APF_D2);
     }
         with{
-        delay(x,del) = x@(del);
-        KRT = hslider("Decay",0,0,1,0.001) : si.smoo;
+            delay(x,del) = x@(del);
+            KRT = hslider("Decay",0,0,1,0.001) : si.smoo;
 
-        // Tuning :
-        APF_A1 = 3200; 
-        APF_A2 = 3020;
-        APF_B1 = 2880;
-        APF_B2 = 2420;
-        APF_C1 = 2430;
-        APF_C2 = 2480;
-        APF_D1 = 2600;
-        APF_D2 = 2820;
-        Lsum_1 = 480;
-        Lsum_2 = 600;
-        Lsum_3 = 880;
-        Lsum_4 = 420;
-        Rsum_1 = 800;
-        Rsum_2 = 920;
-        Rsum_3 = 640;
-        Rsum_4 = 820;
-        };
+            // Tuning :
+            APF_A1 = 3200; 
+            APF_A2 = 3020;
+            APF_B1 = 2880;
+            APF_B2 = 2420;
+            APF_C1 = 2430;
+            APF_C2 = 2480;
+            APF_D1 = 2600;
+            APF_D2 = 2820;
+            Lsum_1 = 480;
+            Lsum_2 = 600;
+            Lsum_3 = 880;
+            Lsum_4 = 420;
+            Rsum_1 = 800;
+            Rsum_2 = 920;
+            Rsum_3 = 640;
+            Rsum_4 = 820;
+            };
 
 process = Reverb;
