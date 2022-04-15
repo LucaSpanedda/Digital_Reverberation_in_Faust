@@ -3,16 +3,15 @@
 import("stdfaust.lib");
 
 // Keith Barr Allpass Loop Reverb
-
 Reverb(IN) = KBReverb
 with{
     APF(delaysamples) = (+ : _ <: @(delaysamples-1), *(0.5)) ~ *(-0.5) : mem, _ : + : _;
 
     Decorrelation(L1,R1,L2,R2,L3,R3,L4,R4) = 
-    (delay(L1,Lsum_1)+delay(L2,Lsum_2)+delay(L3,Lsum_3)+delay(L4,Lsum_4))/4,
-    (delay(R1,Rsum_1)+delay(R2,Rsum_2)+delay(R3,Rsum_3)+delay(R4,Rsum_4))/4;
+    (Delay(L1,Lsum_1)+Delay(L2,Lsum_2)+Delay(L3,Lsum_3)+Delay(L4,Lsum_4))/4,
+    (Delay(R1,Rsum_1)+Delay(R2,Rsum_2)+Delay(R3,Rsum_3)+Delay(R4,Rsum_4))/4;
 
-    KBReverb = IN <: Decorrelation,
+    KBReverb = IN <: (Decorrelation: _*Early, _*Early),
     ((Sect_A<:(_*KRT:Sect_B<:(_*KRT:Sect_C<:(_*KRT:Sect_D<:_*KRT,_,_),_,_),_,_),_,_)~_
     : !,_,_,_,_,_,_,_,_ : Decorrelation) : routing;
     routing(a,b,c,d) = (a+c)/2,(b+d)/2;
@@ -23,8 +22,9 @@ with{
     Sect_D = IN+_ : APF(APF_D1) : APF(APF_D2);
     }
         with{
-            delay(x,del) = x@(del);
-            KRT = hslider("Decay",0,0,1,0.001) : si.smoo;
+            Delay(x,del) = x@(del);
+            Early = hslider("Early Relections",0.880,0,1,0.001) : si.smoo;
+            KRT = hslider("Reverb Decay",0.620,0,1,0.001) : si.smoo;
 
             // Tuning :
             APF_A1 = 3200; 
