@@ -3,7 +3,7 @@
 import("stdfaust.lib");
 
 // Keith Barr Allpass Loop Reverb
-Reverb(IN) = KBReverb
+KBReverb(IN) = Circuit
 with{
     APF(delaysamples) = (+ : _ <: @(delaysamples-1), *(0.5)) ~ *(-0.5) : mem, _ : + : _;
 
@@ -11,7 +11,7 @@ with{
     (Delay(L1,Lsum_1)+Delay(L2,Lsum_2)+Delay(L3,Lsum_3)+Delay(L4,Lsum_4))/4,
     (Delay(R1,Rsum_1)+Delay(R2,Rsum_2)+Delay(R3,Rsum_3)+Delay(R4,Rsum_4))/4;
 
-    KBReverb = IN <: (Decorrelation: _*Early, _*Early),
+    Circuit = IN <: (Decorrelation: _*Early, _*Early),
     ((Sect_A<:(_*KRT:Sect_B<:(_*KRT:Sect_C<:(_*KRT:Sect_D<:_*KRT,_,_),_,_),_,_),_,_)~_
     : !,_,_,_,_,_,_,_,_ : Decorrelation) : routing;
     routing(a,b,c,d) = (a+c)/2,(b+d)/2;
@@ -23,26 +23,28 @@ with{
     }
         with{
             Delay(x,del) = x@(del);
-            Early = hslider("Early Relections",0.880,0,1,0.001) : si.smoo;
-            KRT = hslider("Reverb Decay",0.620,0,1,0.001) : si.smoo;
+            Early = hslider("Early Reflections [style:knob]",0.880,0,1,0.001) : si.smoo;
+            KRT = hslider("Reverb Decay [style:knob]",0.620,0,1,0.001) : si.smoo;
 
             // Tuning :
-            APF_A1 = 3200; 
-            APF_A2 = 3020;
-            APF_B1 = 2880;
-            APF_B2 = 2420;
-            APF_C1 = 2430;
-            APF_C2 = 2480;
-            APF_D1 = 2600;
-            APF_D2 = 2820;
-            Lsum_1 = 480;
-            Lsum_2 = 600;
-            Lsum_3 = 880;
-            Lsum_4 = 420;
-            Rsum_1 = 800;
-            Rsum_2 = 920;
-            Rsum_3 = 640;
-            Rsum_4 = 820;
+            APF_A1 = 3203; 
+            APF_A2 = 3019;
+            APF_B1 = 2879;
+            APF_B2 = 2417;
+            APF_C1 = 2399;
+            APF_C2 = 2269;
+            APF_D1 = 2083;
+            APF_D2 = 2003;
+            Lsum_1 = 491;
+            Lsum_2 = 601;
+            Lsum_3 = 881;
+            Lsum_4 = 419;
+            Rsum_1 = 797;
+            Rsum_2 = 919;
+            Rsum_3 = 631;
+            Rsum_4 = 811;
             };
 
-process = Reverb;
+Dry_Wet = hslider("Dry/Wet [style:knob]",0,0,1,0.001) : si.smoo;
+Master_Route(a,b,c,d) = (a+c)/2, (b+d)/2;
+process = _<: (KBReverb <: _*Dry_Wet, _*Dry_Wet), _*(1-Dry_Wet), _*(1-Dry_Wet): Master_Route;
