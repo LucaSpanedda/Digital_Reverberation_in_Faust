@@ -6,7 +6,6 @@ import("stdfaust.lib");
 // ----------------------------------------
 
 
-
 /* 
 Controlli del filtro:
 delaysamples = campioni di ritardo nella retroazione
@@ -16,7 +15,6 @@ feedback = gain della retroazione col ritardo
     /* 
     +~ è il sommatore, e la retroazione 
     degli argomenti dentro parentesi ()
-
     _ è il segnale in ingresso, (_ rappresentazione segnale)
     in ritardo di @(delaysamples) campioni 
     (dunque valore da passare esternamente)
@@ -29,8 +27,8 @@ feedback = gain della retroazione col ritardo
     sulla funzione in uscita combfeedbout
     */
     
-// (t,g) = give: delay time in samples, feedback gain 0-1
-fbcf(t,g) = _ : (+  @(t-1)~ *(g)) : mem;
+// (Del,G) = DEL=delay time in samples. G=feedback gain 0-1
+FBCF(Del,G,x) = x:(+ @(Del-1)~ *(G)):mem;
 
-// uscita con il process:
-process = os.impulse : fbcf(4481, 0.9) <: _,_;
+// Out
+process = FBCF(4481,0.9);
