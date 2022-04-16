@@ -33,24 +33,24 @@ with{
             KRT = hslider("Reverb Decay [style:knob]",0.820,0,1,0.001) : si.smoo;
 
             // Tuning :
-            APF_A1 = 3203; 
-            APF_A2 = 3019;
-            APF_B1 = 2879;
-            APF_B2 = 2417;
-            APF_C1 = 2399;
-            APF_C2 = 2269;
-            APF_D1 = 2083;
-            APF_D2 = 2003;
-            Lsum_1 = 491;
-            Lsum_2 = 601;
-            Lsum_3 = 881;
-            Lsum_4 = 419;
-            Rsum_1 = 797;
-            Rsum_2 = 919;
-            Rsum_3 = 631;
-            Rsum_4 = 811;
+            APF_A1 = 1617; 
+            APF_A2 = 1557;
+            APF_B1 = 1491;
+            APF_B2 = 1422;
+            APF_C1 = 1356;
+            APF_C2 = 1277;
+            APF_D1 = 1188;
+            APF_D2 = 1116;
+            Lsum_1 = 1617;
+            Lsum_2 = 1491;
+            Lsum_3 = 1356;
+            Lsum_4 = 1188;
+            Rsum_1 = 1557;
+            Rsum_2 = 1422;
+            Rsum_3 = 1277;
+            Rsum_4 = 1116;
             };
 
 Dry_Wet = hslider("Dry/Wet [style:knob]",1,0,1,0.001) : si.smoo;
 Master_Route(a,b,c,d) = (a+c)/2, (b+d)/2;
-process = _<: (KBReverb <: _*Dry_Wet, _*Dry_Wet), _*(1-Dry_Wet), _*(1-Dry_Wet): Master_Route;
+process = _*10:fi.dcblocker<: (KBReverb <: _*Dry_Wet, _*Dry_Wet), _*(1-Dry_Wet), _*(1-Dry_Wet): Master_Route;
