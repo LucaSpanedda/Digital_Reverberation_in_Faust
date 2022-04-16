@@ -6,12 +6,8 @@ import("stdfaust.lib");
 // ----------------------------------------
 
 
-
 /* 
-Controlli del filtro:
-delaysamples = campioni di ritardo nella retroazione
-feedback = gain della retroazione col ritardo
-lowpasscut = taglio frequenza tramite filtro onepole 
+NO DIRECT SIGNAL LPFB-COMB
 */
 
     /* 
@@ -23,8 +19,14 @@ lowpasscut = taglio frequenza tramite filtro onepole
     ecco perché delaysamples-1.
     */
 
-// (t,g,cut) = give: delay samps, feedback gain 0-1, lowpass cut 1-0(open-close)
-lfbcf(t,g,cut) = (+ : @(t-1) : _*cut : +~(_ : *(1-cut)))~ *(g) : mem;
-        
-// uscita con il process:
-process = os.impulse : lfbcf(3000, 0.999, 0.2) <:_,_;
+
+// LPFBC(Del,CFG,FCut) = give: delay samps, feedback gain 0-1, lowpass Freq.Cut HZ
+LPFBC(Del,CFG,FCut) = lfbcf
+with{
+    G(x) = x / (1.0 + x);
+    CF(x) = tan(x * ma.PI / ma.SR):G;
+    lfbcf(x) = x:(+ :@(Del-1) :_*(FCut:CF): +~(_ :*(1-(FCut:CF))))~ *(CFG):mem;
+}; 
+
+// out
+process = LPFBC(2000, 0.99999, 10000);
