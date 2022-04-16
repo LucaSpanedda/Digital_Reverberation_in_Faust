@@ -6,11 +6,8 @@ import("stdfaust.lib");
 // ----------------------------------------
 
 
-
 /* 
-Controlli del filtro:
-delaysamples = campioni di ritardo IIR & FIR
-filtergain = gain IIR & FIR del filtro
+NO DIRECT SIGNAL APF
 */
 
         /* 
@@ -27,8 +24,9 @@ filtergain = gain IIR & FIR del filtro
         in coda, prima della somma di uscita dell'allpass
         */
 
-// (t,g) = give: delay in samples, feedback gain 0-1
-apf(t,g) = (+: _<: @(t-1), *(g))~ *(-g) : mem, _ : + : _;
 
-// uscita con il process:
-process = os.impulse : apf(4200, 0.9) <: _,_;
+// (t,g) = give: delay in samples, feedback gain 0-1
+APF(Del,G,x) = x:(+: _<: @(Del-1), *(G))~ *(-G):mem, _ : + : _;
+
+// out
+process = APF(420, 0.9);
