@@ -19,4 +19,4 @@ OnepoleTPT(CF,x) = circuit ~ _ : ! , _
     };
 
 // out
-process = no.noise : OnepoleTPT(100);
+process = OnepoleTPT(100);
