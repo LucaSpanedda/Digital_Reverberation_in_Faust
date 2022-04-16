@@ -6,13 +6,6 @@ import("stdfaust.lib");
 // ----------------------------------------
 
 
-
-/* 
-Controlli del filtro:
-feedback = gain della retroazione col ritardo
-outgain = gain generale all'uscita del filtro 
-*/
-
     /* 
     +~ è il sommatore, e la retroazione 
     degli argomenti dentro parentesi ()
@@ -25,9 +18,13 @@ outgain = gain generale all'uscita del filtro
     sulla funzione in uscita onezeroout
     */
 
-// (g) = give amplitude 1-0(open-close) for the lowpass cut
-opf(g) = _*g : +~(_ : *(1- g));
+// (G)  = give amplitude 1-0 (open-close) for the lowpass cut
+// (CF) = Frequency Cut in HZ
+OPF(CF,x) = OPFFBcircuit ~ _ 
+    with{
+        g(x) = x / (1.0 + x);
+        G = tan(CF * ma.PI / ma.SR):g;
+        OPFFBcircuit(y) = x*G+(y*(1-G));
+        };
 
-// uscita con il process:
-// viene usato un noise per testare il filtro in questa uscita
-process = no.noise : opf(0.005) <: _,_;
+process = OPF(20000) <: _,_;
