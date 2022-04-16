@@ -19,17 +19,14 @@ outgain = gain generale all'uscita del filtro
     uno in ritardo di un campione _' (' segna il ritardo di un sample)
     e uno senza ritardo , _ (, segna il passaggio al secondo percorso)
     vengono poi risommati in un segnale unico :> _ ;
-
     il segnale in ritardo di un campione 
     ha un controllo di ampiezza * feedforward
-
     c'è un controllo di ampiezza generale * outgain
     sulla funzione in uscita onezeroout
     */
 
-// (g) = give amplitude 0-1(open-close) to the delayed signal
-ozf(g) = _<:(mem*g), _ :> +;
+// (G,x) = x=input, G=give amplitude 0-1(open-close) to the delayed signal
+OZF(G,x) = (x:mem*G), x :> +;
 
-// uscita con il process:
-// viene usato un noise per testare il filtro in questa uscita
-process = no.noise : ozf(0.1) <: _,_;
+// out
+process = OZF(0.1);
