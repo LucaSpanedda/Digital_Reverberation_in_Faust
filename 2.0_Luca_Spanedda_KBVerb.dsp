@@ -1,8 +1,14 @@
+declare name 		"Luca Spanedda's KBVerb";
+declare version 	"1.0.0";
+declare author 		"Luca Spanedda";
+declare copyright 	"Copyright(c) 2022 Luca Spanedda";
+
 // import Standard Faust library
 // https://github.com/grame-cncm/faustlibraries/
 import("stdfaust.lib");
 
-// Keith Barr Allpass Loop Reverb
+// Luca Spanedda's KBVerb
+// Reverb Model based on: Keith Barr Allpass Loop Reverb
 KBReverb(IN) = Circuit
 with{
     APF(delaysamples) = (+ : _ <: @(delaysamples-1), *(0.5)) ~ *(-0.5) : mem, _ : + : _;
@@ -23,8 +29,8 @@ with{
     }
         with{
             Delay(x,del) = x@(del);
-            Early = hslider("Early Reflections [style:knob]",0.880,0,1,0.001) : si.smoo;
-            KRT = hslider("Reverb Decay [style:knob]",0.620,0,1,0.001) : si.smoo;
+            Early = hslider("Early Reflections [style:knob]",0.920,0,1,0.001) : si.smoo;
+            KRT = hslider("Reverb Decay [style:knob]",0.820,0,1,0.001) : si.smoo;
 
             // Tuning :
             APF_A1 = 3203; 
@@ -45,6 +51,6 @@ with{
             Rsum_4 = 811;
             };
 
-Dry_Wet = hslider("Dry/Wet [style:knob]",0,0,1,0.001) : si.smoo;
+Dry_Wet = hslider("Dry/Wet [style:knob]",1,0,1,0.001) : si.smoo;
 Master_Route(a,b,c,d) = (a+c)/2, (b+d)/2;
 process = _<: (KBReverb <: _*Dry_Wet, _*Dry_Wet), _*(1-Dry_Wet), _*(1-Dry_Wet): Master_Route;
