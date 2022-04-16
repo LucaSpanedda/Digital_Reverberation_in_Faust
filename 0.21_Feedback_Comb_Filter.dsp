@@ -7,9 +7,7 @@ import("stdfaust.lib");
 
 
 /* 
-Controlli del filtro:
-delaysamples = campioni di ritardo nella retroazione
-feedback = gain della retroazione col ritardo
+NO DIRECT SIGNAL FB-COMB
 */
 
     /* 
