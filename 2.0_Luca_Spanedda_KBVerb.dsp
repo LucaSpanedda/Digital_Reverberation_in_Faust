@@ -12,6 +12,10 @@ import("stdfaust.lib");
 //------- --------
 
 // Delay Times
+DX  = 1251 ; // INPUT 1
+DY  = 1751 ; // INPUT 2
+DZ  = 1443 ; // INPUT 3
+DW  = 1343 ; // INPUT 4
 D1  = 3823 ; // AP1
 D2  = 4732 ; // AP2
 D3  = 8501 ; // DEL OUT 1
@@ -26,18 +30,18 @@ D11 = 1583 ; // AP8
 D12 = 5867 ; // DEL OUT 4
 
 // Reverb Time
-KRT = hslider("Rev Decay [style:knob]",.8, 0, 1, .001) : si.smoo;
+KRT = hslider("Rev Decay ",.8, 0, 1, .001) : si.smoo;
 // AP Coefficents
 COEFF = .65;
 
 // AP Loop
-KBReverb(KRT, D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12, X, Y, Z, W) = 
-    X <: _ ,
+KBReverb(X, Y, Z, W) = 
+    (X  : intD1) <: _ ,
         ( 
             ( loop_A <: 
-                ( Y, _ * KRT : loop_B <: 
-                    ( Z, _ * KRT : loop_C <: 
-                        ( W, _ * KRT : loop_D <: 
+                ( (Y : intD2), _ * KRT : loop_B <: 
+                    ( (Z  : intD3), _ * KRT : loop_C <: 
+                        ( (W  : intD4), _ * KRT : loop_D <: 
                             _ * KRT, 
                                 si.bus(2) ),
                                     si.bus(2) ),
@@ -50,16 +54,20 @@ KBReverb(KRT, D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12, X, Y, Z, W) =
         loop_B(x, y) = x + y : APF(D4)  : APF(D5)   : DEL(D6)  ;
         loop_C(x, y) = x + y : APF(D7)  : APF(D8)   : DEL(D9)  ;
         loop_D(x, y) = x + y : APF(D10) : APF(D11)  : DEL(D12) ;
+        intD1(x) = x : APF(DX);
+        intD2(x) = x : APF(DY);
+        intD3(x) = x : APF(DZ);
+        intD4(x) = x : APF(DW);
         outrouting(L4, R4, L3, R3, L2, R2, L1, R1) = 
             ((L4, L2) :> _ / 2), 
             ((R3, R1) :> _ / 2);
     };
 
 // OUTS
-process = _ <: KBReverb(KRT, D1, D2, D3, D4, D5, D6, D7, D8, D9, D10, D11, D12);
+process = _ <: KBReverb;
 
 // Allpass filter
-APF(delsamples) = (+ : _<: @(delsamples-1), *(COEFF))~ *(-COEFF) : mem, _ : + : _;
+APF(delsamples) = (+: _<: @(delsamples-1),*(COEFF))~ *(-COEFF) : mem, _ : + : _;
 // Delay
 DEL(delay) = _@(delay);
 // DSP Process in the Feedback Loop
