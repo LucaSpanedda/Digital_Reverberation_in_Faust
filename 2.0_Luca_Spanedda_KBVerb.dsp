@@ -30,7 +30,7 @@ D11 = 1583 ; // AP8
 D12 = 5867 ; // DEL OUT 4
 
 // Reverb Time
-KRT = hslider("Rev Decay ",.8, 0, 1, .001) : si.smoo;
+KRT = hslider("KRT Decay ",.8, 0, 1, .001) : si.smoo;
 // AP Coefficents
 COEFF = .65;
 
@@ -50,10 +50,10 @@ KBReverb(X, Y, Z, W) =
                                                 !, si.bus(8) : outrouting ) : 
                                                     !, si.bus(2) 
     with{
-        loop_A(x, y) = x + y : APF(D1)  : APF(D2)   : DEL(D3)  ; 
-        loop_B(x, y) = x + y : APF(D4)  : APF(D5)   : DEL(D6)  ;
-        loop_C(x, y) = x + y : APF(D7)  : APF(D8)   : DEL(D9)  ;
-        loop_D(x, y) = x + y : APF(D10) : APF(D11)  : DEL(D12) ;
+        loop_A(x, y) = x + y : APF(D1)  : APF(D2)   : DEL(D3) ; 
+        loop_B(x, y) = x + y : APF(D4)  : APF(D5)   : DEL(D6) ;
+        loop_C(x, y) = x + y : APF(D7)  : APF(D8)   : DEL(D9) ;
+        loop_D(x, y) = x + y : APF(D10) : APF(D11)  : DEL(D12);
         intD1(x) = x : APF(DX);
         intD2(x) = x : APF(DY);
         intD3(x) = x : APF(DZ);
@@ -64,7 +64,9 @@ KBReverb(X, Y, Z, W) =
     };
 
 // OUTS
-process = _ <: KBReverb;
+MIX = hslider("MIX Dry/Wet", 0, 0, 1, .001) : si.smoo;
+MIXER(x) = KBReverb(x, x, x, x) : par(i, 2, x * (1-MIX) + _ * MIX);
+process = MIXER;
 
 // Allpass filter
 APF(delsamples) = (+: _<: @(delsamples-1),*(COEFF))~ *(-COEFF) : mem, _ : + : _;
