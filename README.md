@@ -304,8 +304,6 @@ sampsams(samps) = ((1000 / ma.SR) * samps);
 process = _;
 ```
 
-
-
 ## Messa in Fase della Retroiniezione
 
 nel dominio digitale la retroazione di una 
@@ -376,8 +374,6 @@ ingresso nel delay 10samp --> -1, uscita dal delay 19samp +1 = 20out
 
 e così via...
 
-
-
 Procediamo con una implementazione:
 
 ```
@@ -392,31 +388,21 @@ process =   _ :
             // uscita entra in campione singolo ritardo
 ```
 
-
-
 ## Decadimento T60
 
 Il termine "T60" nell'ambito della riverberazione digitale si riferisce al tempo di riverberazione. Il tempo di riverberazione è una misura della durata con cui il suono persiste in un ambiente dopo che la sorgente sonora è stata interrotta. Indica quanto velocemente l'energia sonora diminuisce nel tempo.
 
 Il valore T60 rappresenta il tempo richiesto affinché il livello sonoro del suono si riduca di 60 decibel (dB) rispetto al suo valore iniziale. In altre parole, è il tempo impiegato perché l'energia sonora si attenui di 60 dB. Un T60 lungo indica una riverberazione prolungata, mentre un T60 breve indica una riverberazione più breve.
 
-
-
 La formula esposta di seguito utilizza la relazione tra il tempo di decadimento T60 e il numero di campioni del filtro per calcolare il guadagno di amplificazione necessario. Il risultato del calcolo è un valore lineare compreso tra 0 e 1, che rappresenta l'amplificazione da applicare alla retroazione del filtro.
 
 Inserisci all'interno degli argomenti della funzione:
 
-
-
 - il valore in campioni del filtro 
   che stai usando per il ritardo.
-  
-  
 
 - il valore di decadimento in T60
   (tempo di decadimento di 60 dB in secondi)
-  
-  
 
 - = OTTIENI in uscita dalla funzione, 
   il valore che devi passare come amplificazione
@@ -426,10 +412,179 @@ Inserisci all'interno degli argomenti della funzione:
   ```
   // (samps,seconds) = give: samples of the filter, seconds we want for t60 decay
   dect60(samps,seconds) = 1/(10^((3*(((1000 / ma.SR)*samps)/1000))/seconds));
-  
-  
-  process = _;
   ```
+
+ 
+
+# Filtri Digitali
+
+### ONEZERO FILTER (FIR di I° Ordine)
+
+_ è il segnale in ingresso, (_ rappresentazione segnale)
+    viene a seguito diviso in due percorsi paralleli <: 
+    uno in ritardo di un campione _' (' segna il ritardo di un sample)
+    e uno senza ritardo , _ (, segna il passaggio al secondo percorso)
+    vengono poi risommati in un segnale unico :> _ ;
+    il segnale in ritardo di un campione 
+    ha un controllo di ampiezza * feedforward
+    c'è un controllo di ampiezza generale * outgain
+    sulla funzione in uscita onezeroout
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib");
+
+
+// (G,x) = x=input, G=give amplitude 0-1(open-close) to the delayed signal
+OZF(G,x) = (x:mem*G), x :> +;
+
+// out
+process = OZF(0.1);
+```
+
+### ONEPOLE FILTER (IIR di I° Ordine)
+
++~ è il sommatore, e la retroazione 
+    degli argomenti dentro parentesi ()
+    _ è il segnale in ingresso, (_ rappresentazione segnale)
+    in ritardo di un campione _ (in automatico nella retroazione)
+    che entra : nel gain del controllo della retroazione * 1-feedback
+    lo stesso feedback controlla l'amplificazione in ingresso
+    del segnale non iniettato nella retroazione
+    c'è un controllo di ampiezza generale * outgain
+    sulla funzione in uscita onezeroout
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib");
+
+
+// (G)  = give amplitude 1-0 (open-close) for the lowpass cut
+// (CF) = Frequency Cut in HZ
+OPF(CF,x) = OPFFBcircuit ~ _ 
+    with{
+        g(x) = x / (1.0 + x);
+        G = tan(CF * ma.PI / ma.SR):g;
+        OPFFBcircuit(y) = x*G+(y*(1-G));
+        };
+
+process = OPF(20000) <: _,_;
+```
+
+### ONEPOLE Topology preserving transforms TPT
+
+Versione TPT del Onepole.
+
+OnepoleTPT(CF) = Frequency Cut in HZ
+TPT version of the One-Pole Filter by Vadim Zavalishin
+reference : (by Will Pirkle)
+http://www.willpirkle.com/Downloads/AN-4VirtualAnalogFilters.2.0.pdf
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib");
+
+
+OnepoleTPT(CF,x) = circuit ~ _ : ! , _
+    with {
+        g = tan(CF * ma.PI / ma.SR);
+        G = g / (1.0 + g);
+        circuit(sig) = u , lp
+            with {
+                v = (x - sig) * G;
+                u = v + lp;
+                lp = v + sig;
+            };
+    };
+
+// out
+process = OnepoleTPT(100);
+```
+
+### FEEDFORWARD COMB FILTER (FIR of N° Order)
+
+_ è il segnale in ingresso, (_ rappresentazione segnale)
+    viene a seguito diviso in due percorsi paralleli <: 
+    uno in ritardo di @(delaysamples) campioni
+    (dunque valore da passare esternamente)
+    e uno senza ritardo , _ (, segna il passaggio al secondo percorso)
+    vengono poi risommati in un segnale unico :> _ ;
+
+
+
+Nel feedback è già presente di default un campione di ritardo,
+ecco perché delaysamples-1.
+
+il segnale in ritardo di un campione 
+ha un controllo di ampiezza * feedforward
+
+c'è un controllo di ampiezza generale * outgain
+sulla funzione in uscita onezeroout
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib")
+
+
+// (t,g) = delay time in samples, filter gain 0-1
+ffcf(t,g) = _ <: ( _@(t-1) *g), _ :> _;
+
+// uscita con il process:
+// viene usato un noise per testare il filtro in questa uscita
+process = no.noise : ffcf(100, 0.9) <: _,_;
+```
+
+### FEEDBACK COMB FILTER (IIR di N° Ordine)
+
++~ è il sommatore, e la retroazione 
+    degli argomenti dentro parentesi ()
+    _ è il segnale in ingresso, (_ rappresentazione segnale)
+    in ritardo di @(delaysamples) campioni 
+    (dunque valore da passare esternamente)
+    che entra : nel gain del controllo della retroazione * feedback
+
+
+
+Nel feedback è già presente di default un campione di ritardo,
+ecco perché delaysamples-1.
+
+c'è un controllo di ampiezza generale * outgain
+sulla funzione in uscita combfeedbout
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib")
+
+
+// (Del,G) = DEL=delay time in samples. G=feedback gain 0-1
+FBCF(Del,G,x) = x:(+ @(Del-1)~ *(G)):mem;
+
+// Out
+process = FBCF(4481,0.9);
+```
+
+#### Variante
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib")
+
+
+// Feedback Comb Filter. FBComb(Del,G,signal) 
+// Del=delay time in samples, G=feedback gain 0-1
+FBCombTPT(Del,G,x) = FBcircuit ~ _ 
+    with {
+        FBcircuit(y) = x+y@(Del-1)*G;
+    };
+
+process = FBCombTPT(1000,0.998);
+```
 
 
 
