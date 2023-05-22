@@ -564,7 +564,34 @@ fbcf(del, g, x) = loop ~ _
 process = no.noise * .1 : fbcf(4480, .9);
 ```
 
+### Lowpass FEEDBACK COMB FILTER (IIR di N° Ordine)
 
+come filtro comb, ma all'interno della retroazione,
+    a seguito del feedback entra il segnale : nel onepole.
+    L'onepole è un lowpass dove si può controllare il taglio 
+    di frequenza tra 0. e 1. 
+    Nel feedback è già presente di default un campione di ritardo,
+    ecco perché delaysamples-1.
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib")
+
+
+// LPFBC(Del, FCut) = give: delay samps, -feedback gain 0-1-, lowpass Freq.Cut HZ
+lpfbcf(del, cf, x) = loop ~ _ : !, _
+    with {
+        onepole(CF, x) = loop ~ _ 
+            with{
+                g(x) = x / (1.0 + x);
+                G = tan(CF * ma.PI / ma.SR):g;
+                loop(y) = x * G + (y * (1 - G));
+            };
+        loop(y) = x + y@(del - 1) <: onepole(cf), _;
+    };
+process = _ * .1 : lpfbcf(2000, 10000);
+```
 
 # Topologie e design dei Riverberi Digitali
 

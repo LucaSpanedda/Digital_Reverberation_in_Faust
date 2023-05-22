@@ -19,15 +19,15 @@ mstosamps(t) = (ma.SR/1000) * t : int;
 // (samps) = give tot. samples we want to know in milliseconds
 sampstoms(samps) = ((1000/ma.SR) * samps) : int;
 
+// (meters) = give a distance in meters for samples of the filter
+meterstosamps(meters) = ((ma.SR/1000.) * ((1000*meters)/343.1) * 2);
+
 // (samps,seconds) = give: samples of the filter, seconds we want for t60 decay
 T60samps(samps, seconds) = 1/(10^((3*(((1000 / ma.SR)*samps)/1000))/seconds));
 
 // (ms,seconds) = give: ms delay of the filter, seconds we want for t60 decay
 T60ms(ms,seconds) = 1/(10^((3*(ms/1000))/seconds));
 
-
-// (meters) = give a distance in meters for samples of the filter
-Meterstosamps(meters) = ((ma.SR/1000.)*((1000*meters)/343.1)*2);
 
 //--------------------------------------------- ONEZERO FILTER (FIR of I° Order)
 // (g) = give amplitude 0-1(open-close) to the delayed signal 
@@ -39,9 +39,60 @@ ozf(g, x) = (x' * g), x :> +;
 // (g) = give amplitude 1-0(open-close) for the lowpass cut
 opf(g, x) = x * g : + ~ (_ : * (1 - g));
 // only the pole section
-pole(g) = + ~ *(g);
+pole(g) = + ~ * (g);
 //process = no.noise : opf(.01);
 //process = no.noise * .001 : op(.99);
+
+// (G)  = give amplitude 1-0 (open-close) for the lowpass cut
+// (CF) = Frequency Cut in HZ
+onepole(CF, x) = loop ~ _ 
+    with{
+        g(x) = x / (1.0 + x);
+        G = tan(CF * ma.PI / ma.SR):g;
+        loop(y) = x * G + (y * (1 - G));
+        };
+//process = no.noise : onepole(10);
+
+//----------------------------------------------------------- ONEPOLE TPT FILTER
+opfTPT(CF,x) = circuit ~ _ : ! , _
+    with {
+        g = tan(CF * ma.PI / ma.SR);
+        G = g / (1.0 + g);
+        circuit(sig) = u , lp
+            with {
+                v = (x - sig) * G;
+                u = v + lp;
+                lp = v + sig;
+            };
+    };
+//process = no.noise : opfTPT(100);
+
+//------------------------------------ FEEDFORWARD COMB FILTER (FIR of N° Order)
+// (t, g) = delay time in samples, filter gain 0-1
+ffcf(t, g, x) = (x@(t) * g), x :> +;
+//process = no.noise * .1 : ffcf(100, 1);
+
+//--------------------------------------- FEEDBACK COMB FILTER (FIR of N° Order)
+// (del, g) = DEL=delay time in samples. G=feedback gain 0-1
+fbcf(del, g, x) = loop ~ _ 
+    with {
+        loop(y) = x + y@(del - 1) * g;
+    };
+//process = no.noise * .1 : fbcf(4480, .9);
+
+//------------------------------- LOWPASS FEEDBACK COMB FILTER (FIR of N° Order)
+// LPFBC(Del, FCut) = give: delay samps, -feedback gain 0-1-, lowpass Freq.Cut HZ
+lpfbcf(del, cf, x) = loop ~ _ : !, _
+    with {
+        onepole(CF, x) = loop ~ _ 
+            with{
+                g(x) = x / (1.0 + x);
+                G = tan(CF * ma.PI / ma.SR):g;
+                loop(y) = x * G + (y * (1 - G));
+            };
+        loop(y) = x + y@(del - 1) <: onepole(cf), _;
+    };
+process = _ * .1 : lpfbcf(2000, 10000);
 
 
 //------------------------------------------------------------------------------
@@ -54,22 +105,8 @@ pole(g) = + ~ *(g);
 // reference : 
 // https://ccrma.stanford.edu/~jos/fp/DC_Blocker.html
 DCblocker = Ozf(-1) : Op(0.998);
-//
-//
-//------------------------------------------------------------------------------
-// FEEDFORWARD COMB FILTER (FIR of N° sample delay)
-//------------------------------------------------------------------------------
-// (t,g) = delay time in samples, filter gain 0-1
-Ffcf(t,g) = _ <: ( _@(t-1) *g), _ :> _;
-//
-//
-//------------------------------------------------------------------------------
-// FEEDBACK COMB FILTER (IIR of N° sample delay)
-//------------------------------------------------------------------------------
-// (t,g) = give: delay time in samples, feedback gain 0-1
-Fbcf(t,g) = _ : (+  @(t-1)~ *(g)) : mem;
-//
-//
+
+
 //------------------------------------------------------------------------------
 // LOWPASS FEEDBACK COMB FILTER (IIR of N° sample delay)
 //------------------------------------------------------------------------------
