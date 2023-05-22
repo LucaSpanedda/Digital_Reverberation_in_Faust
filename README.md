@@ -2,8 +2,6 @@
 
 La riverberazione digitale è un argomento sempre attuale e ampiamente discusso nelgli ambiti della computer music e del Digital Signla Processing, e della musica elettroacustica in generale. Le sue applicazioni e gli studi in hanno coinvolto sia il settore commerciale che quello accademico. Di conseguenza, si è sviluppata nel tempo una storia complessa caratterizzata da numerose ramificazioni e implicazioni, che hanno portato a una proliferazione di diversi metodi e topologie di implementazione. In questo studio, approfondiremo in dettaglio l'argomento, esaminando le principali implementazioni esistenti
 
-
-
 ## Il Riverbero
 
 Il riverbero è la persistenza di un suono dopo che un suono è stato prodotto.
@@ -21,8 +19,6 @@ per tornare al punto di partenza confondendosi nell'orecchio dell'ascoltatore co
 Se l'ostacolo si trova a più di 17 metri di distanza dalla fonte, 
 allora il ritardo del suono riflesso rispetto al suono diretto è superiore ai 100 millisecondi e i due suoni risultano quindi distinti. 
 In questo caso si parla di eco.
-
-
 
 ### La durata di un riverbero
 
@@ -45,8 +41,6 @@ Quelli più influenti sono:
 Il miglior modo per ascoltare il riverbero di uno spazio riverberante è quello di produrre un suono impulsivo;
 come un battito di mani o uno schiocco di dita.
 
-
-
 ### Il Riverbero nella musica
 
 La musica ha fatto largo uso di riverberi per migliaia di anni.
@@ -54,8 +48,6 @@ Gli archeologi pensano che sin dall'antichità veniva utilizzato il riverbero pr
 Molte cattedrali in Europa hanno riverberi con una durata più lunga di 10 secondi, 
 e la musica corale di certe ere funzionava particolarmente bene sfruttando il riverbero all'interno di queste cattedrali.
 Infatti il riverbero delle singole note si sovrappone sulle note a seguito, trasformando una melodia monofonica in un suono polifonico.
-
-
 
 ### Le riflessioni
 
@@ -84,8 +76,6 @@ Di tutti questi echo non se ne percepisce nessuno singolarmente,
 ma piuttosto si percepisce il loro insieme e la dispersione di questi nel tempo.
 Il riverbero è dunque composto da migliaia di echo 
 del suono originale che persistono e decadono nel tempo
-
-
 
 ### I modelli di riverberazione artificiali
 
@@ -119,8 +109,6 @@ ma viene invece aggiunto in un secondo momento.
 4. Riverbero digitale
    Il segnale analogico viene digitalizzato ed immagazzinato in banchi di memoria RAM 
    che viene utilizzata come la spirale metallica del riverbero a molla. 
-   
-   
 
 ## I Riverberi Digitali
 
@@ -145,15 +133,9 @@ per replicare l'impressione della riverberazione di una stanza.
 Il processo di replica ha generato nella storia dei riverberi digitali veri e propri suoni tipici differenti fra loro
 che possono essere implementati e preferiti dai musicisti per ragioni estetiche.
 
-
-
-
-
 # La Riverberazione Digitale in FAUST
 
 Esperimenti e algoritmi di modelli di riverberazione digitale in linguaggio FAUST (GRAME)
-
-
 
 ## Le linee di ritardo in Faust
 
@@ -184,35 +166,35 @@ dirac = 1-1';
 process = dirac, dirac;
 ```
 
-
-
 ## Alcuni metodi per implementare circuiti ricorsivi nel linguaggio Faust
 
 Illustreremo 3 Metodi principali:
 
 - Scrivere la riga di codice con recorsività interne:
-      in questo modo l'operatore tilde ~ manda il segnale
-      in uscita all'interno di se stesso, al primo ingresso
-      disponibile. Creando un circuito di retroazione (feedback).
-      Un modo per forzare l'operatore a puntare in un certo punto
-      del codice, è mettere le parentesi (), in questo modo ~
-      punterà all'ingresso prima della parentesi.
+  
+  in questo modo l'operatore tilde ~ manda il segnale
+  in uscita all'interno di se stesso, al primo ingresso
+  disponibile. Creando un circuito di retroazione (feedback).
+  Un modo per forzare l'operatore a puntare in un certo punto
+  del codice, è mettere le parentesi (), in questo modo ~
+  punterà all'ingresso prima della parentesi.
 
 - Un secondo metodo consiste nell'utilizzo del with{} .
-      Si può definire una funzione in cui vengono passati
-      i vari argomenti della funzione che controllano 
-      i paramteri del codice,
-      e dire che quella funzione è uguale a
-      uscita dal with con ~ _
-      esempio:
-
-    funzione_with(argomento1, argomento2) = out_with ~ _
-    with{
+  
+  Si può definire una funzione in cui vengono passati
+  i vari argomenti della funzione che controllano 
+  i paramteri del codice,
+  e dire che quella funzione è uguale a
+  uscita dal with con ~ _
+  esempio:
+  
+      funzione_with(argomento1, argomento2) = out_with ~ _
+       with{  
         sezione1 = _ * argomento1;
         sezione2 = argomento1 * argomento2;
         out_with = sezione2;
         };
-    
+      
         dove out_with ~ _ rientra in se stesso.
 
 Inoltre il with in Faust permette di dichiarare delle variabili
@@ -220,38 +202,37 @@ che non vengono puntate dall'esterno del codice ma solo
 dalla funzione di appartenenza; in questo caso
 la funzione a cui appartiene il with è "funzione_with".
 
-
-
 - Un terzo metodo è utilizzare l'ambiente letrec.
-      con questo metodo possiamo scrivere un segnale
-      in modo ricorsivo, in modo simile a come vengono
-      scritte le equazioni di ricorrenza.
   
-  esempio: 
-
-    // Importo la libreria standard di FAUST
-    import("stdfaust.lib");
-    
-    // metodo con letrec:
-    // funzione
-    lowpass(cf, x) = y
-     // definizione letrec
-     letrec {
-     'y = b0 * x - a1 * y;
-     }
-     // cosa contiene il letrec
-     with {
-     b0 = 1 + a1;
-     a1 = exp(-w(cf)) * -1;
-     w(f) = 2 * ma.PI * f / ma.SR;
-     };
-    
-    // Uscita della funzione ricorsiva scritta con letrec
-    process = lowpass;
-
-
-
-
+  con questo metodo possiamo scrivere un segnale
+  in modo ricorsivo, in modo simile a come vengono
+  scritte le equazioni di ricorrenza.
+  
+  esempio:
+  
+  ```
+  Importo la libreria standard di FAUST
+   import("stdfaust.lib");
+  
+  // metodo con letrec:
+   // funzione
+   lowpass(cf, x) = y
+   // definizione letrec
+   letrec {
+   'y = b0 * x - a1 * y;
+   }
+   // cosa contiene il letrec
+   with {
+   b0 = 1 + a1;
+   a1 = exp(-w(cf)) * -1;
+   w(f) = 2 * ma.PI * f / ma.SR;
+   };
+  
+  // Uscita della funzione ricorsiva scritta con letrec
+   process = lowpass;
+  ```
+  
+   
 
 ## Conversione Millisecondi in Campioni e viceversa
 
@@ -325,10 +306,6 @@ sampsams(samps) = ((1000 / ma.SR) * samps);
 process = _;
 ```
 
-
-
-
-
 # Topologie e design dei Riverberi Digitali
 
 ## Testi
@@ -357,8 +334,6 @@ process = _;
   - William Martens e Gary Kendall propongono delle early reflection spazializzate.
   - Michael Gerzon, John Stautner & Miller Puckette propongono le Feedback Delay Network (mixer a matrice per i feedback).
   - David Griesinger propone un singolo Loop di Feedback utilizzando ritardi e filtri allpass.
-    
-    
 
 # Referenze principali
 
