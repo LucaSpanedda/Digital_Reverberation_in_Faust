@@ -231,8 +231,6 @@ la funzione a cui appartiene il with è "funzione_with".
   // Uscita della funzione ricorsiva scritta con letrec
    process = lowpass;
   ```
-  
-   
 
 ## Conversione Millisecondi in Campioni e viceversa
 
@@ -305,6 +303,135 @@ sampsams(samps) = ((1000 / ma.SR) * samps);
 
 process = _;
 ```
+
+
+
+## Messa in Fase della Retroiniezione
+
+nel dominio digitale la retroazione di una 
+linea di ritardo, nel momento in cui viene
+applicata, costa di default un campione di ritardo.
+Retroazione = 1 Campione 
+
+Nel momento in cui decido dunque di porre 
+all'interno della retroazione un numero 
+di campioni di ritardo,
+possiamo prendere ad esempio 10 campioni
+nella nostra linea di ritardo, vuole dire che,
+Il segnale diretto uscirà per ritardo campioni a:
+
+ingresso nel delay segnale --> uscita dal delay 10samp
+
+Il 1° Ricircolo:
+uscita dal delay a 10samp + 1 retroazione = 
+ingresso nel delay 11samp --> uscita dal delay 21samp
+
+Il 2° Ricircolo:
+uscita dal delay a 21samp + 1 retroazione = 
+ingresso nel delay 22samp --> uscita dal delay 32samp
+
+Il 3° Ricircolo:
+uscita dal delay a 32samp + 1 retroazione = 
+ingresso nel delay 33samp --> uscita dal delay 43samp
+
+e così via...
+
+possiamo dunque notare da subito che non avremo
+il corretto valore di ritardo richiesto all'interno della stessa,
+a causa del campione di ritardo che avviene nel momento
+in cui decido di creare un circuito di retroazione.
+se utilizziamo il metodo di sottrarre un campione dalla linea 
+di ritardo, avremo questo risultato:
+
+ingresso nel delay segnale --> -1, uscita dal delay 9samp
+
+Il 1° Ricircolo:
+uscita dal delay a 9samp + 1 retroazione = 
+ingresso nel delay 10samp --> -1, uscita dal delay 19samp
+
+Il 2° Ricircolo:
+uscita dal delay a 19samp + 1 retroazione = 
+ingresso nel delay 20samp --> -1, uscita dal delay 29samp
+
+Il 3° Ricircolo:
+uscita dal delay a 29samp + 1 retroazione = 
+ingresso nel delay 30samp --> -1, uscita dal delay 39samp
+
+e così via...
+
+possiamo dunque notare che con questo metodo,
+rispetto al precedente avremo in ingresso alla linea di ritardo
+sempre il numero di campioni di ritardo richiesti.
+Ma notiamo che sin dalla prima uscita del segnale ritardato
+sottraendo -1 abbiamo in out un campione di ritardo
+in meno rispetto a quanto vorremmo.
+Per rimettere in fase il tutto, basterà sommare un campione di ritardo
+all'uscita complessiva del circuito, avendo così sin dal primo out:
+
+ingresso nel delay segnale --> -1, uscita dal delay 9samp +1 = 10out
+
+Il 1° Ricircolo:
+uscita dal delay a 9samp + 1 retroazione = 
+ingresso nel delay 10samp --> -1, uscita dal delay 19samp +1 = 20out
+
+e così via...
+
+
+
+Procediamo con una implementazione:
+
+```
+campioni_ritardo = ma.SR; 
+// frequenza campionamento
+
+process =   _ : 
+            // segnale in input entra in
+            +~ @(campioni_ritardo -1) *(0.8) 
+            // linea ritardo con feedback: +~
+            : mem;
+            // uscita entra in campione singolo ritardo
+```
+
+
+
+## Decadimento T60
+
+Il termine "T60" nell'ambito della riverberazione digitale si riferisce al tempo di riverberazione. Il tempo di riverberazione è una misura della durata con cui il suono persiste in un ambiente dopo che la sorgente sonora è stata interrotta. Indica quanto velocemente l'energia sonora diminuisce nel tempo.
+
+Il valore T60 rappresenta il tempo richiesto affinché il livello sonoro del suono si riduca di 60 decibel (dB) rispetto al suo valore iniziale. In altre parole, è il tempo impiegato perché l'energia sonora si attenui di 60 dB. Un T60 lungo indica una riverberazione prolungata, mentre un T60 breve indica una riverberazione più breve.
+
+
+
+La formula esposta di seguito utilizza la relazione tra il tempo di decadimento T60 e il numero di campioni del filtro per calcolare il guadagno di amplificazione necessario. Il risultato del calcolo è un valore lineare compreso tra 0 e 1, che rappresenta l'amplificazione da applicare alla retroazione del filtro.
+
+Inserisci all'interno degli argomenti della funzione:
+
+
+
+- il valore in campioni del filtro 
+  che stai usando per il ritardo.
+  
+  
+
+- il valore di decadimento in T60
+  (tempo di decadimento di 60 dB in secondi)
+  
+  
+
+- = OTTIENI in uscita dalla funzione, 
+  il valore che devi passare come amplificazione
+  alla retroazione del filtro per ottenere
+  il tempo di decadimento T60 che si desidera
+  
+  ```
+  // (samps,seconds) = give: samples of the filter, seconds we want for t60 decay
+  dect60(samps,seconds) = 1/(10^((3*(((1000 / ma.SR)*samps)/1000))/seconds));
+  
+  
+  process = _;
+  ```
+
+
 
 # Topologie e design dei Riverberi Digitali
 
