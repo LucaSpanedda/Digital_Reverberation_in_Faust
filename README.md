@@ -617,6 +617,30 @@ apf(del, g, x) = x : (+ : _ <: @(del-1), *(g))~ *(-g) : mem, _ : + : _;
 process = no.noise * .1 <: apf(100, .5);
 ```
 
+### Modulated ALLPASS FILTER
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib")
+
+
+// Modulated Allpass filter
+ModAPF(delsamples, samplesmod, freqmod, apcoeff) = ( + : _ <: 
+    delayMod(delsamples, samplesmod, freqmod),
+    * (apcoeff))~ * (-apcoeff) : mem, _ : + : _
+    with{
+        delayMod(samples, samplesMod, freqMod, x) = delay
+        with{
+            unipolarMod(f, samples) = ((os.osc(f) + 1) / 2) * samples;
+            delay = x : de.fdelay(samples, samples - unipolarMod(freqMod, samplesMod));
+        };
+    };
+process = 1-1' : +@(ma.SR/100) ~ _ <: _, ModAPF(1000, 500, .12, .5);
+```
+
+
+
 # Topologie e design dei Riverberi Digitali
 
 ## Testi
