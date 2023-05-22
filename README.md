@@ -513,8 +513,6 @@ _ è il segnale in ingresso, (_ rappresentazione segnale)
     e uno senza ritardo , _ (, segna il passaggio al secondo percorso)
     vengono poi risommati in un segnale unico :> _ ;
 
-
-
 Nel feedback è già presente di default un campione di ritardo,
 ecco perché delaysamples-1.
 
@@ -531,11 +529,8 @@ import("stdfaust.lib")
 
 
 // (t,g) = delay time in samples, filter gain 0-1
-ffcf(t,g) = _ <: ( _@(t-1) *g), _ :> _;
-
-// uscita con il process:
-// viene usato un noise per testare il filtro in questa uscita
-process = no.noise : ffcf(100, 0.9) <: _,_;
+ffcf(t, g, x) = (x@(t) * g), x :> +;
+process = no.noise * .1 : ffcf(100, 1);
 ```
 
 ### FEEDBACK COMB FILTER (IIR di N° Ordine)
@@ -546,8 +541,6 @@ process = no.noise : ffcf(100, 0.9) <: _,_;
     in ritardo di @(delaysamples) campioni 
     (dunque valore da passare esternamente)
     che entra : nel gain del controllo della retroazione * feedback
-
-
 
 Nel feedback è già presente di default un campione di ritardo,
 ecco perché delaysamples-1.
@@ -561,29 +554,14 @@ sulla funzione in uscita combfeedbout
 import("stdfaust.lib")
 
 
-// (Del,G) = DEL=delay time in samples. G=feedback gain 0-1
-FBCF(Del,G,x) = x:(+ @(Del-1)~ *(G)):mem;
-
-// Out
-process = FBCF(4481,0.9);
-```
-
-#### Variante
-
-```
-// import Standard Faust library
-// https://github.com/grame-cncm/faustlibraries/
-import("stdfaust.lib")
-
-
 // Feedback Comb Filter. FBComb(Del,G,signal) 
-// Del=delay time in samples, G=feedback gain 0-1
-FBCombTPT(Del,G,x) = FBcircuit ~ _ 
+// (Del, G) = DEL=delay time in samples. G=feedback gain 0-1
+fbcf(del, g, x) = loop ~ _ 
     with {
-        FBcircuit(y) = x+y@(Del-1)*G;
+        loop(y) = x + y@(del - 1) * g;
     };
 
-process = FBCombTPT(1000,0.998);
+process = no.noise * .1 : fbcf(4480, .9);
 ```
 
 
