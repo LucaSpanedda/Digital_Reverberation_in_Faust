@@ -4,7 +4,6 @@ declare version "1.0";
 declare description "2023";
 declare copyright "Copyright (C) 2023 Luca Spanedda <lucaspanedda1995@gmail.com>";
 declare license "MIT license";
-
 // Import the standard Faust Libraries
 import("stdfaust.lib");
 
@@ -28,6 +27,19 @@ T60samps(samps, seconds) = 1/(10^((3*(((1000 / ma.SR)*samps)/1000))/seconds));
 // (ms,seconds) = give: ms delay of the filter, seconds we want for t60 decay
 T60ms(ms,seconds) = 1/(10^((3*(ms/1000))/seconds));
 
+//----------------------------------------------------------- NOISE with LCG ---
+// pseudo-random noise with linear congruential generator (LCG)
+noise(initSeed) = LCG ~ _ : (_ / m)
+with{
+    // variables
+    // initSeed = an initial seed value
+    a = 18446744073709551557; // a large prime number, such as 18446744073709551557
+    c = 12345; // a small prime number, such as 12345
+    m = 2 ^ 31; // 2.1 billion
+    // linear_congruential_generator
+    LCG(seed) = ((a * seed + c) + (initSeed-initSeed') % m);
+};
+//process = noise(12345839), noise(22346889);
 
 //--------------------------------------------- ONEZERO FILTER (FIR of I° Order)
 // (g) = give amplitude 0-1(open-close) to the delayed signal 
