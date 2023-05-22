@@ -593,6 +593,30 @@ lpfbcf(del, cf, x) = loop ~ _ : !, _
 process = _ * .1 : lpfbcf(2000, 10000);
 ```
 
+### ALLPASS FILTER
+
+dalla somma (+ si passa : ad un cavo _ ed uno split <:
+        poi @ritardo e gain, in retroazione ~ alla somma iniziale.
+        filtergain controlla l'ampiezza dei due stati di guadagno, 
+        che sono nel filtro lo stesso valore ma positivo e negativo,
+        da una parte *-filtergain e da una parte *+filtergain.
+        Nel feedback è già presente di default un campione di ritardo,
+        ecco perché delaysamples-1.
+        Per mantenere invece la soglia di ritardo del valore delaysamples,
+        viene aggiunto un ritardo mem (del campione sottratto)
+        in coda, prima della somma di uscita dell'allpass
+
+```
+// import Standard Faust library
+// https://github.com/grame-cncm/faustlibraries/
+import("stdfaust.lib")
+
+
+// (t, g) = give: delay in samples, feedback gain 0-1
+apf(del, g, x) = x : (+ : _ <: @(del-1), *(g))~ *(-g) : mem, _ : + : _;
+process = no.noise * .1 <: apf(100, .5);
+```
+
 # Topologie e design dei Riverberi Digitali
 
 ## Testi
