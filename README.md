@@ -114,7 +114,9 @@ by putting a number 1 and subtracting the same value from it
 but doing it at a delayed sample.
 
 Example:
+```
 (https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/78717290e46cb6cb529ba41304c51361adc8a8cd/REV.lib#L11-L13)
+```
 
 ## Some Methods for Implementing Recursive Circuits in the Faust Language
 
