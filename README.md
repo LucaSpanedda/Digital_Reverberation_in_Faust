@@ -397,25 +397,7 @@ similar to the comb filter, but within the feedback,
     In the feedback, one sample of delay is already present by default,
     hence delaysamples-1.
 
-
-```
-// import Standard Faust library
-// https://github.com/grame-cncm/faustlibraries/
-import("stdfaust.lib")
-
-// LPFBC(Del, FCut) = give: delay samps, -feedback gain 0-1-, lowpass Freq.Cut HZ
-lpfbcf(del, cf, x) = loop ~ _ : !, _
-    with {
-        onepole(CF, x) = loop ~ _ 
-            with{
-                g(x) = x / (1.0 + x);
-                G = tan(CF * ma.PI / ma.SR):g;
-                loop(y) = x * G + (y * (1 - G));
-            };
-        loop(y) = x + y@(del - 1) <: onepole(cf), _;
-    };
-process = _ * .1 : lpfbcf(2000, 10000);
-```
+https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/35524fa6d329f856c2dd6a9057fbf2b296c810dc/files/lpfbcf.dsp#L1-L16
 
 ### ALLPASS FILTER
 
@@ -430,57 +412,23 @@ from the sum (+ transitions : to a cable _ and a split <:
         a mem delay (of the subtracted sample) is added
         at the end
 
-```
-// import Standard Faust library
-// https://github.com/grame-cncm/faustlibraries/
-import("stdfaust.lib")
-
-
-// (t, g) = give: delay in samples, feedback gain 0-1
-apf(del, g, x) = x : (+ : _ <: @(del-1), *(g))~ *(-g) : mem, _ : + : _;
-process = no.noise * .1 <: apf(100, .5);
-```
+https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/ad119f43d322581c8316026c97fe35518b863284/files/apf.dsp#L1-L7
 
 ### Modulated ALLPASS FILTER
 
-```
-// import Standard Faust library
-// https://github.com/grame-cncm/faustlibraries/
-import("stdfaust.lib")
-
-
-// Modulated Allpass filter
-ModAPF(delsamples, samplesmod, freqmod, apcoeff) = ( + : _ <: 
-    delayMod(delsamples, samplesmod, freqmod),
-    * (apcoeff))~ * (-apcoeff) : mem, _ : + : _
-    with{
-        delayMod(samples, samplesMod, freqMod, x) = delay
-        with{
-            unipolarMod(f, samples) = ((os.osc(f) + 1) / 2) * samples;
-            delay = x : de.fdelay(samples, samples - unipolarMod(freqMod, samplesMod));
-        };
-    };
-process = 1-1' : +@(ma.SR/100) ~ _ <: _, ModAPF(1000, 500, .12, .5);
-```
+https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/19acaf236017bfa39c46172a60375fbe3df51118/files/modapf.dsp#L1-L16
 
 # Topologies and Design of Digital Reverbs
 
 ## References
 
 - Manfred Schroeder, “Natural Sounding Artificial Reverb,” 1962. 
-
 - Michael Gerzon, “Synthetic Stereo Reverberation,” 1971. 
-
 - James (Andy) Moorer, “About This Reverberation Business,” 1979
-
 - Christopher Moore, “Time-Modulated Delay System and Improved Reverberation Using Same,” 1979. 
-
 - John Stautner and Miller Puckette, “Designing Multichannel Reverberators,” 1982. 
-
 - Jon Dattorro, “Effect Design - Part 1: Reverberator and Other Filters,” 1997.
-
 - Jean-Marc Jot, “Efficient models for reverberation and distance rendering in computer music and virtual audio reality,” 1997. 
-
 - D. Rochesso, “Reverberation,” DAFX - Digital Audio Effects, Udo Zölzer, 2002.
   
   ## Topologies
@@ -496,14 +444,14 @@ process = 1-1' : +@(ma.SR/100) ~ _ <: _, ModAPF(1000, 500, .12, .5);
 
 Introduction to Digital Filters: 
 With Audio Applications.
-Libro di Julius O. Smith III.
-Links alla serie di Libri di Smith:
+books by Julius O. Smith III.
+Links to the series by Smith:
 
 - Mathematics of the Discrete Fourier Transform (DFT)
 - Introduction to Digital Filters
 - Physical Audio Signal Processing
 - Spectral Audio Signal Processing
-  sulla pagina CCRMA di J.Smith https://ccrma.stanford.edu/~jos/fp/ su DSP Related [Free DSP Books](https://www.dsprelated.com/freebooks.php)
+  CCRMA by J.Smith https://ccrma.stanford.edu/~jos/fp/ su DSP Related [Free DSP Books](https://www.dsprelated.com/freebooks.php)
 
 TOM ERBE - UC SAN DIEGO - REVERB TOPOLOGIES AND DESIGN http://tre.ucsd.edu/wordpress/wp-content/uploads/2018/10/reverbtopo.pdf
 
@@ -526,72 +474,4 @@ Algorithmic Reverbs: The Moorer Design [Algorithmic Reverbs: The Moorer Design |
 
 Dattorro Convex Optimization of a Reverberator [Dattorro Convex Optimization of a Reverberator - Wikimization](https://www.convexoptimization.com/wikimization/index.php/Dattorro_Convex_Optimization_of_a_Reverberator)
 
-Tabella dei numeri primi inferiori a 10.000 https://www.matematika.it/public/allegati/34/Numeri_primi_minori_di_10000_1_3.pdf
-
-Introduction to Digital Filters: 
-With Audio Applications.
-Libro di Julius O. Smith III.
-Links alla serie di Libri di Smith:
-
-- Mathematics of the Discrete Fourier Transform (DFT)
-- Introduction to Digital Filters
-- Physical Audio Signal Processing
-- Spectral Audio Signal Processing
-  sulla pagina CCRMA di J.Smith https://ccrma.stanford.edu/~jos/fp/ su DSP Related [Free DSP Books](https://www.dsprelated.com/freebooks.php)
-
-TOM ERBE - UC SAN DIEGO - REVERB TOPOLOGIES AND DESIGN http://tre.ucsd.edu/wordpress/wp-content/uploads/2018/10/reverbtopo.pdf
-
-ARTIFICIAL REVERBERATION: su DSPRELATED [Artificial Reverberation | Physical Audio Signal Processing](https://www.dsprelated.com/freebooks/pasp/Artificial_Reverberation.html)
-
-Corey Kereliuk - Building a Reverb Plugin in Faust
-Keith Barr’s reverb architecture http://blog.reverberate.ca/post/faust-reverb/
-
-Spin Semiconductor DSP Basics [Spin Semiconductor - DSP Basics](http://www.spinsemi.com/knowledge_base/dsp_basics.html) Spin Semiconductor Audio Effects [Spin Semiconductor - Effects](http://www.spinsemi.com/knowledge_base/effects.html#Reverberation)
-
-freeverb3vst - Reverb Algorithms Tips http://freeverb3vst.osdn.jp/tips/reverb.shtml
-
-History of allpass loop / "ring" reverbs http://www.spinsemi.com/forum/viewtopic.php?p=555&sid=5d31391b3883f1b9e013d5af80805019
-
-Musical Applications of Microprocessors (The Hayden microcomputer series) http://sites.music.columbia.edu/cmc/courses/g6610/fall2016/week8/Musical_Applications_of_Microprocessors-Charmberlin.pdf
-
-Acustica_Riverbero - Alfredo Ardia [Appunti: acustica_Riverbero](http://appuntimusicaelettronica.blogspot.com/2012/10/acusticariverbero.html)
-
-Algorithmic Reverbs: The Moorer Design [Algorithmic Reverbs: The Moorer Design | flyingSand](https://christianfloisand.wordpress.com/2012/10/18/algorithmic-reverbs-the-moorer-design/)
-
-Dattorro Convex Optimization of a Reverberator [Dattorro Convex Optimization of a Reverberator - Wikimization](https://www.convexoptimization.com/wikimization/index.php/Dattorro_Convex_Optimization_of_a_Reverberator)
-
-Tabella dei numeri primi inferiori a 10.000 https://www.matematika.it/public/allegati/34/Numeri_primi_minori_di_10000_1_3.pdfReferenze principali
-
-Introduction to Digital Filters: 
-With Audio Applications.
-Libro di Julius O. Smith III.
-Links alla serie di Libri di Smith:
-
-- Mathematics of the Discrete Fourier Transform (DFT)
-- Introduction to Digital Filters
-- Physical Audio Signal Processing
-- Spectral Audio Signal Processing
-  sulla pagina CCRMA di J.Smith https://ccrma.stanford.edu/~jos/fp/ su DSP Related [Free DSP Books](https://www.dsprelated.com/freebooks.php)
-
-TOM ERBE - UC SAN DIEGO - REVERB TOPOLOGIES AND DESIGN http://tre.ucsd.edu/wordpress/wp-content/uploads/2018/10/reverbtopo.pdf
-
-ARTIFICIAL REVERBERATION: su DSPRELATED [Artificial Reverberation | Physical Audio Signal Processing](https://www.dsprelated.com/freebooks/pasp/Artificial_Reverberation.html)
-
-Corey Kereliuk - Building a Reverb Plugin in Faust
-Keith Barr’s reverb architecture http://blog.reverberate.ca/post/faust-reverb/
-
-Spin Semiconductor DSP Basics [Spin Semiconductor - DSP Basics](http://www.spinsemi.com/knowledge_base/dsp_basics.html) Spin Semiconductor Audio Effects [Spin Semiconductor - Effects](http://www.spinsemi.com/knowledge_base/effects.html#Reverberation)
-
-freeverb3vst - Reverb Algorithms Tips http://freeverb3vst.osdn.jp/tips/reverb.shtml
-
-History of allpass loop / "ring" reverbs http://www.spinsemi.com/forum/viewtopic.php?p=555&sid=5d31391b3883f1b9e013d5af80805019
-
-Musical Applications of Microprocessors (The Hayden microcomputer series) http://sites.music.columbia.edu/cmc/courses/g6610/fall2016/week8/Musical_Applications_of_Microprocessors-Charmberlin.pdf
-
-Acustica_Riverbero - Alfredo Ardia http://appuntimusicaelettronica.blogspot.com/2012/10/acusticariverbero.html
-
-Algorithmic Reverbs: The Moorer Design [Algorithmic Reverbs: The Moorer Design | flyingSand](https://christianfloisand.wordpress.com/2012/10/18/algorithmic-reverbs-the-moorer-design/)
-
-Dattorro Convex Optimization of a Reverberator [Dattorro Convex Optimization of a Reverberator - Wikimization](https://www.convexoptimization.com/wikimization/index.php/Dattorro_Convex_Optimization_of_a_Reverberator)
-
-Tabella dei numeri primi inferiori a 10.000 https://www.matematika.it/public/allegati/34/Numeri_primi_minori_di_10000_1_3.pdf 
+primes under 10.000 https://www.matematika.it/public/allegati/34/Numeri_primi_minori_di_10000_1_3.pdf
