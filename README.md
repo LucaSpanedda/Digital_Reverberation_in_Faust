@@ -116,12 +116,12 @@ but doing it at a delayed sample.
 Example:
 
 ```
-// IMPULSO DI DIRAC tramite linea di ritardo
-// Importo la libreria
+// Dirac Impulse with delay line
+// import Standard Faust library
 import("stdfaust.lib");
 
 
-// Impulso di Dirac
+// Dirac Impulse
 dirac = 1-1';
 // Process
 process = dirac, dirac;
@@ -172,24 +172,23 @@ the function to which with belongs is "function_with".
   example:
   
   ```
-  Importo la libreria standard di FAUST
    import("stdfaust.lib");
   
-  // metodo con letrec:
-   // funzione
+   // letrec:
+   // function
    lowpass(cf, x) = y
-   // definizione letrec
+   // letrec definition
    letrec {
    'y = b0 * x - a1 * y;
    }
-   // cosa contiene il letrec
+   // inside the letrec function
    with {
    b0 = 1 + a1;
    a1 = exp(-w(cf)) * -1;
    w(f) = 2 * ma.PI * f / ma.SR;
    };
   
-  // Uscita della funzione ricorsiva scritta con letrec
+  // Output of the letrec function
    process = lowpass;
   ```
 
@@ -324,14 +323,14 @@ Let's proceed with an implementation:
 
 ```
 campioni_ritardo = ma.SR; 
-// frequenza campionamento
+// sample rate - ma.SR
 
 process =   _ : 
-            // segnale in input entra in
+            // input signal goes in
             +~ @(campioni_ritardo -1) *(0.8) 
-            // linea ritardo con feedback: +~
+            // delay line with feedback: +~
             : mem;
-            // uscita entra in campione singolo ritardo
+            // output goes to a single sample delay
 ```
 
 ## T60 Decay Calculation
@@ -405,7 +404,6 @@ process = OZF(0.1);
 // https://github.com/grame-cncm/faustlibraries/
 import("stdfaust.lib");
 
-
 // (G)  = give amplitude 1-0 (open-close) for the lowpass cut
 // (CF) = Frequency Cut in HZ
 OPF(CF,x) = OPFFBcircuit ~ _ 
@@ -428,7 +426,6 @@ http://www.willpirkle.com/Downloads/AN-4VirtualAnalogFilters.2.0.pdf
 // import Standard Faust library
 // https://github.com/grame-cncm/faustlibraries/
 import("stdfaust.lib");
-
 
 OnepoleTPT(CF,x) = circuit ~ _ : ! , _
     with {
@@ -474,7 +471,6 @@ ffcf(t, g, x) = (x@(t) * g), x :> +;
 process = no.noise * .1 : ffcf(100, 1);
 ```
 
-
 ### FEEDBACK COMB FILTER (Nth Order IIR)
 
 +~ is the summation, and the feedback 
@@ -489,7 +485,6 @@ hence delaysamples-1.
 
 there is a general amplitude control * outgain
 on the output function combfeedbout
-
 
 ```
 // import Standard Faust library
@@ -507,7 +502,6 @@ fbcf(del, g, x) = loop ~ _
 process = no.noise * .1 : fbcf(4480, .9);
 ```
 
-
 ### Lowpass FEEDBACK COMB FILTER (Nth Order IIR)
 
 similar to the comb filter, but within the feedback,
@@ -523,7 +517,6 @@ similar to the comb filter, but within the feedback,
 // https://github.com/grame-cncm/faustlibraries/
 import("stdfaust.lib")
 
-
 // LPFBC(Del, FCut) = give: delay samps, -feedback gain 0-1-, lowpass Freq.Cut HZ
 lpfbcf(del, cf, x) = loop ~ _ : !, _
     with {
@@ -537,7 +530,6 @@ lpfbcf(del, cf, x) = loop ~ _ : !, _
     };
 process = _ * .1 : lpfbcf(2000, 10000);
 ```
-
 
 ### ALLPASS FILTER
 
@@ -585,11 +577,9 @@ ModAPF(delsamples, samplesmod, freqmod, apcoeff) = ( + : _ <:
 process = 1-1' : +@(ma.SR/100) ~ _ <: _, ModAPF(1000, 500, .12, .5);
 ```
 
+# Topologies and Design of Digital Reverbs
 
-
-# Topologie e design dei Riverberi Digitali
-
-## Testi
+## References
 
 - Manfred Schroeder, “Natural Sounding Artificial Reverb,” 1962. 
 
@@ -607,7 +597,7 @@ process = 1-1' : +@(ma.SR/100) ~ _ <: _, ModAPF(1000, 500, .12, .5);
 
 - D. Rochesso, “Reverberation,” DAFX - Digital Audio Effects, Udo Zölzer, 2002.
   
-  ## Topologie
+  ## Topologies
   
   - Manfred Schroeder propone l'applicazione di una rete di allpass e comb filters.
   - James Moorer implementa un filtro lowpass all'interno della retroazione dei comb.
@@ -616,7 +606,7 @@ process = 1-1' : +@(ma.SR/100) ~ _ <: _, ModAPF(1000, 500, .12, .5);
   - Michael Gerzon, John Stautner & Miller Puckette propongono le Feedback Delay Network (mixer a matrice per i feedback).
   - David Griesinger propone un singolo Loop di Feedback utilizzando ritardi e filtri allpass.
 
-# Referenze principali
+# Main References
 
 Introduction to Digital Filters: 
 With Audio Applications.
