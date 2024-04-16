@@ -1,158 +1,119 @@
-# La Riverberazione Digitale
+# Digital Reverberation
 
-La riverberazione digitale è un argomento sempre attuale e ampiamente discusso nelgli ambiti della computer music e del Digital Signla Processing, e della musica elettroacustica in generale. Le sue applicazioni e gli studi in hanno coinvolto sia il settore commerciale che quello accademico. Di conseguenza, si è sviluppata nel tempo una storia complessa caratterizzata da numerose ramificazioni e implicazioni, che hanno portato a una proliferazione di diversi metodi e topologie di implementazione. In questo studio, approfondiremo in dettaglio l'argomento, esaminando le principali implementazioni esistenti
+Digital reverberation is a continually relevant and widely discussed topic in the realms of computer music and Digital Signal Processing, as well as electroacoustic music in general. Its applications and studies have involved both commercial and academic sectors. Consequently, over time, a complex history has developed, characterized by numerous ramifications and implications, leading to a proliferation of various methods and implementation topologies. In this study, we will delve into the subject in detail, examining the main existing implementations.
 
-## Il Riverbero
+## Reverberation
 
-Il riverbero è la persistenza di un suono dopo che un suono è stato prodotto.
-è un fenomeno acustico legato alla riflessione dell'onda sonora da parte di un ostacolo posto davanti alla sorgente del suono.
-Presupposti che determinano la percezione di un fenomeno di riverberazione:
+Reverberation is the persistence of sound after it has been produced. It is an acoustic phenomenon related to the reflection of sound waves by an obstacle placed in front of the sound source. Assumptions that determine the perception of a reverberation phenomenon:
 
-1. L'orecchio umano non riesce a distinguere due suoni se essi sono percepiti a meno di 100 millisecondi di distanza uno dall'altro.
-2. La velocità del suono nell'aria a 20 °C è di circa 340 m/s.
-3. La fonte sonora e l'ascoltatore si trovano nello stesso punto di fronte all'ostacolo.
+1. The human ear cannot distinguish two sounds if they are perceived less than 100 milliseconds apart.
+2. The speed of sound in the air at 20°C is approximately 340 m/s.
+3. The sound source and the listener are in the same location facing the obstacle.
 
-Dati questi presupposti, in uno spazio aperto si può parlare di riverbero quando l'ostacolo si trova a meno di 17 metri dalla fonte del suono. 
-Infatti, fino a questa distanza, il percorso dell'onda sonora dalla fonte all'ostacolo e ritorno è inferiore a 34 metri 
-e quindi il suono impiega meno di 100 millisecondi 
-per tornare al punto di partenza confondendosi nell'orecchio dell'ascoltatore con il suono originario.
-Se l'ostacolo si trova a più di 17 metri di distanza dalla fonte, 
-allora il ritardo del suono riflesso rispetto al suono diretto è superiore ai 100 millisecondi e i due suoni risultano quindi distinti. 
-In questo caso si parla di eco.
+Given these assumptions, in an open space, reverberation can be discussed when the obstacle is less than 17 meters from the sound source. Indeed, up to this distance, the path of the sound wave from the source to the obstacle and back is less than 34 meters, and therefore the sound takes less than 100 milliseconds to return to the starting point, blending into the listener's ear with the original sound. If the obstacle is more than 17 meters away from the source, then the delay of the reflected sound compared to the direct sound is more than 100 milliseconds, and the two sounds are therefore distinct. In this case, it is called an echo.
 
-### La durata di un riverbero
+### Duration of Reverberation
 
-I fattori che influenzano la durata di un riverbero sono molteplici.
-Quelli più influenti sono:
+The factors that influence the duration of reverberation are multiple. The most influential ones are:
 
-1. La dimensione di una stanza
+1. Room size
    
-   - stanze più grandi producono riverberi più lunghi
-   - piccole stanze producono riverberi corti
+   - Larger rooms produce longer reverberations.
+   - Small rooms produce shorter reverberations.
 
-2. I materiali
+2. Materials
    
-   - materiali duri come creta e plastici riflettono di più il suono
-   - i materiali morbidi come il legno assorbono molto di più il suono
+   - Hard materials like ceramics and plastics reflect sound more.
+   - Soft materials like wood absorb much more sound.
    
-   per questi motivi legati ai materiali una piccola stanza come il bagno ha tempi di riverberazione più lunghi
-   di una grande stanza in legno.
+   For these reasons related to materials, a small room like a bathroom has longer reverberation times than a large wooden room.
 
-Il miglior modo per ascoltare il riverbero di uno spazio riverberante è quello di produrre un suono impulsivo;
-come un battito di mani o uno schiocco di dita.
+The best way to listen to the reverberation of a reverberant space is to produce an impulsive sound; like a clap of hands or a snap of fingers.
 
-### Il Riverbero nella musica
+### Reverberation in Music
 
-La musica ha fatto largo uso di riverberi per migliaia di anni.
-Gli archeologi pensano che sin dall'antichità veniva utilizzato il riverbero prodotto dalle caverne nelle cerimonie.
-Molte cattedrali in Europa hanno riverberi con una durata più lunga di 10 secondi, 
-e la musica corale di certe ere funzionava particolarmente bene sfruttando il riverbero all'interno di queste cattedrali.
-Infatti il riverbero delle singole note si sovrappone sulle note a seguito, trasformando una melodia monofonica in un suono polifonico.
+Music has made extensive use of reverberation for thousands of years. Archaeologists believe that reverberation produced by caves was used in ancient ceremonies. Many cathedrals in Europe have reverberations lasting more than 10 seconds, and the choral music of certain eras worked particularly well by exploiting the reverberation inside these cathedrals. In fact, the reverberation of individual notes overlaps on subsequent notes, transforming a monophonic melody into a polyphonic sound.
 
-### Le riflessioni
+### Reflections
 
-Una stanza standard ha 6 superfici:
+A standard room has 6 surfaces:
 
-- muro a destra
-- muro a sinistra
-- muro frontale
-- muro dietro
-- soffitto
-- pavimento
+- Right wall
+- Left wall
+- Front wall
+- Back wall
+- Ceiling
+- Floor
 
-un , nel momento in cui viene prodotto rimbalza sulle superfici e viene in seguito ascoltato
-produrrà quelle che vengono chiamate
+A sound, when produced, bounces off the surfaces and is subsequently heard, producing what are called:
 
-1. riflessioni del primo ordine
+1. First-order reflections
 
-ognuna di queste produrrà altri 6 echo: 6 echo, ognuno rimbalzante sulle 6 superfici produrrà 36 echo;
-queste vengono chiamate
+Each of these will produce another 6 echoes: 6 echoes, each bouncing off the 6 surfaces, will produce 36 echoes; these are called:
 
-2. riflessioni di secondo ordine
+2. Second-order reflections
 
-producendo nel totale 42 echo in un brevissimo periodo di tempo
-e così via...
-Di tutti questi echo non se ne percepisce nessuno singolarmente, 
-ma piuttosto si percepisce il loro insieme e la dispersione di questi nel tempo.
-Il riverbero è dunque composto da migliaia di echo 
-del suono originale che persistono e decadono nel tempo
+producing a total of 42 echoes in a very short period of time, and so on... Of all these echoes, none is perceived individually, but rather their ensemble and dispersion over time are perceived. Reverberation is thus composed of thousands of echoes of the original sound that persist and decay over time.
 
-### I modelli di riverberazione artificiali
+### Artificial Reverberation Models
 
-Il riverbero è artificiale quando non è presente nella stanza dove sta avvenendo la registrazione,
-ma viene invece aggiunto in un secondo momento. 
+Reverberation is artificial when it is not present in the room where the recording is taking place but is instead added later.
 
-1. Riverbero a nastro
-   Si utilizza un particolare registratore/riproduttore a nastro magnetico che fa scorrere 
-   a velocità costante un anello di nastro dentro una meccanica dotata di una testina di registrazione 
-   fissa e di una di riproduzione mobile. 
-   Il segnale registrato dalla prima testina viene letto dalla seconda e miscelato all'originale generando l'effetto. 
-   Il tempo di ritardo dipende dalla distanza tra le due testine e permette di generare sia l'effetto riverbero sia l'effetto eco. 
-   Questi apparecchi sono ingombranti e pesanti. Come in ogni registrazione a nastro, si ha un rumore di fondo simile a un fruscio, 
-   nettamente superiore a quello prodotto con tecnologie digitali.
+1. Tape echo
+   A particular magnetic tape recorder/player is used, which constantly moves a tape loop inside a mechanism with a fixed recording head and a mobile playback head. The signal recorded by the first head is read by the second and mixed with the original, generating the effect. These devices are bulky and heavy. Like in any tape recording, there is background noise similar to hiss, significantly higher than that produced with digital technologies.
 
-2. Riverbero a molla
-   Il segnale viene fatto passare, tramite un trasduttore, 
-   attraverso una spirale metallica (la molla). 
-   All'altro capo della molla un trasduttore equivalente al primo reimmette il segnale nel circuito di amplificazione 
-   miscelandolo a quello originale. 
-   Il segnale prelevato dal secondo trasduttore risulta leggermente ritardato rispetto 
-   a quello applicato al primo originando nell'orecchio dell'ascoltatore l'effetto del riverbero.
+2. Spring reverb
+   The signal is passed, through a transducer, through a metal spiral (the spring). At the other end of the spring, a transducer equivalent to the first one reintroduces the signal into the amplification circuit, mixing it with the original. The signal taken from the second transducer is slightly delayed compared to the one applied to the first, creating the reverberation effect in the listener's ear.
 
-3. Riverbero a camera
-   Sulla falsariga del riverbero a molla, in una scatola isolata acusticamente dall'esterno 
-   viene inserito un tubo curvato in maniera da creare il percorso più lungo possibile. 
-   Ad un'estremità del tubo viene posto un piccolo altoparlante mentre all'altra estremità c'è un microfono. 
-   Il suono emesso dall'altoparlante impiegherà un certo tempo per percorrere tutto il tubo 
-   ed arrivare al microfono generando così il ritardo necessario.
+3. Chamber reverb
+   Following the spring reverb model, in a box acoustically isolated from the outside, a curved tube is inserted to create the longest possible path. At one end of the tube is placed a small loudspeaker, while at the other end there is a microphone. The sound emitted by the loudspeaker will take some time to travel the entire tube and reach the microphone, thus generating the necessary delay. The signal taken from the microphone will be fed back into the mixing console, mixed with the original.
 
-4. Riverbero digitale
-   Il segnale analogico viene digitalizzato ed immagazzinato in banchi di memoria RAM 
-   che viene utilizzata come la spirale metallica del riverbero a molla. 
+4. Plate reverb
+   Similar to spring reverb, but with a large metal plate instead of the spring. It has two transducers attached to its surface and works in a similar way, although its quality is significantly higher.
 
-## I Riverberi Digitali
+## Digital Reverbs
 
-Vengono prodotti da un computer o da circuiti integrati DSP dedicati.
-Esistono sul mercato circuiti integrati che comprendono i convertitori A/D e D/A, 
-le memorie ed i circuiti di temporizzazione. 
-Un segnale acustico viene trasdotto e convertito in numeri che entrano dentro memorie,
-Infatti i byte vengono fatti "scorrere" da un banco al successivo fino al raggiungimento dell'ultimo. 
-Il segnale digitale prelevato dall'ultima memoria viene poi riconvertito in analogico e miscelato 
-al segnale originale ottenendo l'effetto riverbero;
-più lontano è il punto di lettura rispetto al punto di scrittura e più lungo sarà il tempo dell'echo.
-la grandezza di queste memorie di lettura e scrittura è chiamata: linea di ritatdo, ed è espressa in campioni.
-La grande capacità delle memorie RAM permette di raggiungere anche ritardi 
-di parecchi secondi e quindi passare agevolmente da riverbero a eco. 
-La strategia utilizzata in seguito è quella di retroazionare l'output della linea di ritardo sommandola all'input,
-creando così un circuito di feedback.
-Tutto questo processo viene fatto poichè i computer moderni sono molto potenti, 
-ma non sono ancora abbastanza potenti da essere in grado di generare tutte le riflessioni 
-ascoltate in una grande stanza, una per una.
-Piuttosto l'obiettivo di creare riverberi digitali è quello di implementare modelli e strategie
-per replicare l'impressione della riverberazione di una stanza.
-Il processo di replica ha generato nella storia dei riverberi digitali veri e propri suoni tipici differenti fra loro
-che possono essere implementati e preferiti dai musicisti per ragioni estetiche.
+They are produced by a computer or dedicated DSP integrated circuits.
+There are integrated circuits on the market that include A/D and D/A converters,
+memories, and timing circuits. 
+An acoustic signal is transduced and converted into numbers that enter memories.
+In fact, the bytes are "scrolled" from one bank to the next until the last one is reached. 
+The digital signal taken from the last memory is then reconverted into analog and mixed 
+with the original signal, obtaining the reverberation effect;
+the farther the read point from the write point, the longer the echo time will be.
+The size of these read and write memories is called delay line, and it is expressed in samples.
+The large capacity of RAM memories allows achieving delays 
+of several seconds and therefore smoothly transition from reverb to echo. 
+The strategy used afterwards is to feed back the output of the delay line by adding it to the input,
+thus creating a feedback circuit.
+All this process is done because modern computers are very powerful, 
+but they are not yet powerful enough to generate all the reflections 
+heard in a large room, one by one.
+Rather, the goal of creating digital reverbs is to implement models and strategies
+to replicate the impression of the reverberation of a room.
+The replication process has generated in the history of digital reverbs true and proper typical sounds different from each other
+which can be implemented and preferred by musicians for aesthetic reasons.
 
-# La Riverberazione Digitale in FAUST
+# Digital Reverb in FAUST
 
-Esperimenti e algoritmi di modelli di riverberazione digitale in linguaggio FAUST (GRAME)
+Experiments and algorithms of digital reverb models in the FAUST language (GRAME)
 
-## Le linee di ritardo in Faust
+## Delay Lines in Faust
 
-Le linee di ritardo in Faust si suddividono nelle seguenti categorie:
-mem - indica un solo campione di ritardo
-@ - indica un numero (ex. 44100) di campioni di ritardo variabile
-x'- x indica un qualsiasi ingresso e: ' un campione di ritardo, ''(2), ecc.
-rdtable - indica una tabella di sola lettura
-rwtable - indica una tabella di scrittura e lettura.
+Delay lines in Faust are divided into the following categories:
+mem - indicates a single sample delay
+@ - indicates a number (e.g., 44100) of variable delay samples
+x'- x indicates any input and: ' a sample delay, ''(2), etc.
+rdtable - indicates a read-only table
+rwtable - indicates a read and write table.
 
-Tramite le linee di ritardo
-possiamo creare un impulso di Dirac, che rappresenta 
-la nostra unità minima, ovvero il singolo campione
-mettendo un numero 1 e sottraendo da esso lo stesso valore
-ma facendolo ad un campione di ritardo. 
+Through delay lines, 
+we can create a Dirac impulse, which represents 
+our minimum unit, namely the single sample
+by putting a number 1 and subtracting the same value from it
+but doing it at a delayed sample.
 
-esempio:
+Example:
 
 ```
 // IMPULSO DI DIRAC tramite linea di ritardo
@@ -166,49 +127,49 @@ dirac = 1-1';
 process = dirac, dirac;
 ```
 
-## Alcuni metodi per implementare circuiti ricorsivi nel linguaggio Faust
+## Some Methods for Implementing Recursive Circuits in the Faust Language
 
-Illustreremo 3 Metodi principali:
+We will illustrate 3 main methods:
 
-- Scrivere la riga di codice con recorsività interne:
+- Writing the code line with internal recursion:
   
-  in questo modo l'operatore tilde ~ manda il segnale
-  in uscita all'interno di se stesso, al primo ingresso
-  disponibile. Creando un circuito di retroazione (feedback).
-  Un modo per forzare l'operatore a puntare in un certo punto
-  del codice, è mettere le parentesi (), in questo modo ~
-  punterà all'ingresso prima della parentesi.
+  in this way the tilde ~ operator sends the signal
+  output to itself, to the first available input
+  creating a feedback circuit.
+  One way to force the operator to point to a certain point
+  in the code, is to put parentheses (), in this way ~
+  will point to the input before the parenthesis.
 
-- Un secondo metodo consiste nell'utilizzo del with{} .
+- A second method consists of using with{} .
   
-  Si può definire una funzione in cui vengono passati
-  i vari argomenti della funzione che controllano 
-  i paramteri del codice,
-  e dire che quella funzione è uguale a
-  uscita dal with con ~ _
-  esempio:
+  You can define a function in which are passed
+  the various arguments of the function that control
+  the parameters of the code,
+  and say that that function is equal to
+  exit from the with with ~ _
+  example:
   
-      funzione_with(argomento1, argomento2) = out_with ~ _
+      function_with(argument1, argument2) = out_with ~ _
        with{  
-        sezione1 = _ * argomento1;
-        sezione2 = argomento1 * argomento2;
-        out_with = sezione2;
+        section1 = _ * argument1;
+        section2 = argument1 * argument2;
+        out_with = section2;
         };
       
-        dove out_with ~ _ rientra in se stesso.
+        where out_with ~ _ returns to itself.
 
-Inoltre il with in Faust permette di dichiarare delle variabili
-che non vengono puntate dall'esterno del codice ma solo
-dalla funzione di appartenenza; in questo caso
-la funzione a cui appartiene il with è "funzione_with".
+Moreover, with in Faust allows declaring variables
+that are not pointed to from outside the code but only
+from the belonging function; in this case
+the function to which with belongs is "function_with".
 
-- Un terzo metodo è utilizzare l'ambiente letrec.
+- A third method is to use the letrec environment.
   
-  con questo metodo possiamo scrivere un segnale
-  in modo ricorsivo, in modo simile a come vengono
-  scritte le equazioni di ricorrenza.
+  with this method we can write a signal
+  recursively, similar to how
+  recurrence equations are written.
   
-  esempio:
+  example:
   
   ```
   Importo la libreria standard di FAUST
@@ -232,149 +193,134 @@ la funzione a cui appartiene il with è "funzione_with".
    process = lowpass;
   ```
 
-## Conversione Millisecondi in Campioni e viceversa
+## Conversion of Milliseconds to Samples and Vice Versa
 
-### Conversione Millisecondi in Campioni
+### Conversion from Milliseconds to Samples
 
-Funzione Conversione Campioni in ms. :
-inserisco il tempo in Millisecondi,
-e la funzione mi tira fuori il valore in Campioni.
+Function for Conversion from Milliseconds to Samples:
+we input the time in milliseconds,
+and the function gives us the value in samples.
 
-Ad esempio, se ho una frequenza di campionamento 
-di 48.000 campioni al secondo, 
-vuole dire che 1000ms (1 secondo) sono rappresentati
-da 48.000 parti, e che quindi una singola unità
-temporale come 1 ms. Corrisponde in digitale a 48 campioni.
+For example, if we have a sampling frequency 
+of 48,000 samples per second, 
+it means that 1000ms (1 second) is represented
+by 48,000 parts, and therefore a single unit
+of time like 1 ms. Corresponds digitally to 48 samples.
 
-Per questo motivo si divide la frequenza di campionamento
-per 1000ms avendo dunque in risultato un tot. di campioni
-che corrisponde ad 1 ms. nel mondo digitale ad 
-una determinata frequenza di campionamento.
+For this reason, we divide the sampling frequency
+by 1000ms, resulting in a total number of samples
+that corresponds to 1 ms. in the digital world at 
+a certain sampling frequency.
 
-E poi si moltiplica il risultato di questa operazione
-per il totale di ms. che vogliamo ottenere come 
-rappresentazione in campioni.
-Se moltiplico *10. Ad esempio avrò in uscita 
-dalla funzione, 480 campioni ad una frequenza di campionamento 
-di 48.000 campioni al secondo.
+And then we multiply the result of this operation
+by the total number of milliseconds we want to obtain as 
+a representation in samples.
+If we multiply *10. For example, we will get
+480 samples at a sampling frequency 
+of 48,000 samples per second.
 
-```
-// (t) = give time in milliseconds we want to know in samples
-msasamps(t) = (ma.SR / 1000.) * t;
+### Conversion from Samples to Milliseconds
 
-process = _;
-```
+Function for Conversion from Samples to Milliseconds:
+we input a total number of samples,
+of which we need to know the overall duration
+in milliseconds based on our sampling frequency.
 
-### Conversione Campioni in Millisecondi
+We know that a sampling frequency
+corresponds to a set of values that express 
+together the duration of 1 second (1000 ms).
 
-Funzione Conversione ms. in Campioni :
-inserisco un totale di campioni,
-di cui mi serve di sapere la durata complessiva
-in millisecondi basandomi sulla mia frequenza di campionamento.
+It means, for example,
+that at a sampling frequency of 48,000
+samples per second, 
+1000 milliseconds are represented by 48,000 parts.
+So if we divide our 1000ms. / 
+into the 48,000 parts which are the samples of our system,
+we would get the duration in milliseconds of a single sample
+at that sampling frequency,
+in this case therefore: 
+1000 / 48,000 = 0.02ms. 
+And so the duration in milliseconds of a single sample at 48,000
+samples per second, is 0.02 milliseconds.
+If we multiply the obtained number *
+a total number of samples, we will get the time in milliseconds
+of those samples for that sampling frequency used.
 
-Sappiamo che una frequenza di campionamento
-corrisponde ad un insieme di valori che esprimono 
-nel loro insieme la durata di 1 secondo (1000 ms.).
+Obviously, as can be deduced from the considerations,
+as the sampling frequency increases,
+the temporal duration of a single sample decreases,
+and thus a greater definition.
 
-Vuole dire ad esempio,
-che ad una frequenza di campionamento di 48.000
-campioni al secondo, 
-ho 1000 millisecondi rappresentati da 48.000 parti.
-E dunque se divido i miei 1000ms. / 
-nelle 48.000 parti che sarebbero i campioni del mio sistema,
-otterrei la durata in millisecondi di un singolo campione
-a quella frequenza di campionamento,
-in questo caso dunque: 
-1000 / 48.000 = 0,02ms. 
-E dunque la durata in millisecondi di un singolo campione a 48.000
-campioni al secondo, è di 0,02 millisecondi.
-se moltiplico il numero ottenuto *
-un totale di campioni, otterrò il tempo in millisecondi
-di quei campioni per quella frequenza di campionamento usata.
+## Phase Alignment of Feedback
 
-Ovviamente come si può dedurre dalle considerazioni,
-all'incrementare della frequenza di campionamento 
-corrisponde una durata temporale più piccola del singolo campione,
-e dunque una definizione maggiore.
+In the digital domain, the feedback of a 
+delay line, when applied, costs by default one sample delay.
+Feedback = 1 Sample
 
-```
-// (samps) = give tot. samples we want to know in milliseconds
-sampsams(samps) = ((1000 / ma.SR) * samps);
+At the moment I decide therefore to put
+inside the feedback a number
+of delay samples,
+we can take for example 10 samples
+in our delay line, it means that,
+The direct signal will come out for delay samples at:
 
-process = _;
-```
+input in the delay signal --> output from the delay 10samp
 
-## Messa in Fase della Retroiniezione
+1st Feedback:
+output from the delay at 10samp + 1 feedback = 
+input in the delay 11samp --> output from the delay 21samp
 
-nel dominio digitale la retroazione di una 
-linea di ritardo, nel momento in cui viene
-applicata, costa di default un campione di ritardo.
-Retroazione = 1 Campione 
+2nd Feedback:
+output from the delay at 21samp + 1 feedback = 
+input in the delay 22samp --> output from the delay 32samp
 
-Nel momento in cui decido dunque di porre 
-all'interno della retroazione un numero 
-di campioni di ritardo,
-possiamo prendere ad esempio 10 campioni
-nella nostra linea di ritardo, vuole dire che,
-Il segnale diretto uscirà per ritardo campioni a:
+3rd Feedback:
+output from the delay at 32samp + 1 feedback = 
+input in the delay 33samp --> output from the delay 43samp
 
-ingresso nel delay segnale --> uscita dal delay 10samp
+and so on...
 
-Il 1° Ricircolo:
-uscita dal delay a 10samp + 1 retroazione = 
-ingresso nel delay 11samp --> uscita dal delay 21samp
+we can therefore notice immediately that we will not have
+the correct delay value required inside the same,
+because of the sample delay that occurs at the moment
+when I decide to create a feedback circuit.
+if we use the method of subtracting one sample from the delay line,
+we will have this result:
 
-Il 2° Ricircolo:
-uscita dal delay a 21samp + 1 retroazione = 
-ingresso nel delay 22samp --> uscita dal delay 32samp
+input in the delay signal --> -1, output from the delay 9samp
 
-Il 3° Ricircolo:
-uscita dal delay a 32samp + 1 retroazione = 
-ingresso nel delay 33samp --> uscita dal delay 43samp
+1st Feedback:
+output from the delay at 9samp + 1 feedback = 
+input in the delay 10samp --> -1, output from the delay 19samp
 
-e così via...
+2nd Feedback:
+output from the delay at 19samp + 1 feedback = 
+input in the delay 20samp --> -1, output from the delay 29samp
 
-possiamo dunque notare da subito che non avremo
-il corretto valore di ritardo richiesto all'interno della stessa,
-a causa del campione di ritardo che avviene nel momento
-in cui decido di creare un circuito di retroazione.
-se utilizziamo il metodo di sottrarre un campione dalla linea 
-di ritardo, avremo questo risultato:
+3rd Feedback:
+output from the delay at 29samp + 1 feedback = 
+input in the delay 30samp --> -1, output from the delay 39samp
 
-ingresso nel delay segnale --> -1, uscita dal delay 9samp
+and so on...
 
-Il 1° Ricircolo:
-uscita dal delay a 9samp + 1 retroazione = 
-ingresso nel delay 10samp --> -1, uscita dal delay 19samp
+we can therefore notice that with this method,
+compared to the previous one we will have as input to the delay line
+always the number of delay samples required.
+But we notice that from the first output of the delayed signal
+subtracting -1 we have one sample delay
+less than we would like.
+To realign everything, we just need to add one sample delay
+to the overall output of the circuit, thus having from the first output:
 
-Il 2° Ricircolo:
-uscita dal delay a 19samp + 1 retroazione = 
-ingresso nel delay 20samp --> -1, uscita dal delay 29samp
+input in the delay signal --> -1, output from the delay 9samp +1 = 10out
 
-Il 3° Ricircolo:
-uscita dal delay a 29samp + 1 retroazione = 
-ingresso nel delay 30samp --> -1, uscita dal delay 39samp
+1st Feedback:
+output from the delay at 9samp + 1 feedback = 
+input in the delay 10samp --> -1, output from the delay 19samp +1 = 20out
 
-e così via...
+and so on...
 
-possiamo dunque notare che con questo metodo,
-rispetto al precedente avremo in ingresso alla linea di ritardo
-sempre il numero di campioni di ritardo richiesti.
-Ma notiamo che sin dalla prima uscita del segnale ritardato
-sottraendo -1 abbiamo in out un campione di ritardo
-in meno rispetto a quanto vorremmo.
-Per rimettere in fase il tutto, basterà sommare un campione di ritardo
-all'uscita complessiva del circuito, avendo così sin dal primo out:
-
-ingresso nel delay segnale --> -1, uscita dal delay 9samp +1 = 10out
-
-Il 1° Ricircolo:
-uscita dal delay a 9samp + 1 retroazione = 
-ingresso nel delay 10samp --> -1, uscita dal delay 19samp +1 = 20out
-
-e così via...
-
-Procediamo con una implementazione:
+Let's proceed with an implementation:
 
 ```
 campioni_ritardo = ma.SR; 
@@ -388,47 +334,46 @@ process =   _ :
             // uscita entra in campione singolo ritardo
 ```
 
-## Decadimento T60
+## T60 Decay Calculation
 
-Il termine "T60" nell'ambito della riverberazione digitale si riferisce al tempo di riverberazione. Il tempo di riverberazione è una misura della durata con cui il suono persiste in un ambiente dopo che la sorgente sonora è stata interrotta. Indica quanto velocemente l'energia sonora diminuisce nel tempo.
+The term "T60" in the context of digital reverberation refers to the reverberation time. The reverberation time is a measure of the duration for which sound persists in a space after the sound source has stopped. It indicates how quickly the sound energy decreases over time.
 
-Il valore T60 rappresenta il tempo richiesto affinché il livello sonoro del suono si riduca di 60 decibel (dB) rispetto al suo valore iniziale. In altre parole, è il tempo impiegato perché l'energia sonora si attenui di 60 dB. Un T60 lungo indica una riverberazione prolungata, mentre un T60 breve indica una riverberazione più breve.
+The T60 value represents the time it takes for the sound level to decrease by 60 decibels (dB) compared to its initial value. In other words, it is the time taken for the sound energy to decay by 60 dB. A long T60 indicates prolonged reverberation, while a short T60 indicates shorter reverberation.
 
-La formula esposta di seguito utilizza la relazione tra il tempo di decadimento T60 e il numero di campioni del filtro per calcolare il guadagno di amplificazione necessario. Il risultato del calcolo è un valore lineare compreso tra 0 e 1, che rappresenta l'amplificazione da applicare alla retroazione del filtro.
+The formula below uses the relationship between the T60 decay time and the number of filter samples to calculate the amplification gain necessary. The result of the calculation is a linear value ranging from 0 to 1, representing the amplification to be applied to the filter feedback.
 
-Inserisci all'interno degli argomenti della funzione:
+Insert the following arguments into the function:
 
-- il valore in campioni del filtro 
-  che stai usando per il ritardo.
+- The value in samples of the filter 
+  you are using for the delay.
 
-- il valore di decadimento in T60
-  (tempo di decadimento di 60 dB in secondi)
+- The decay value in T60
+  (decay time of 60 dB in seconds)
 
-- = OTTIENI in uscita dalla funzione, 
-  il valore che devi passare come amplificazione
-  alla retroazione del filtro per ottenere
-  il tempo di decadimento T60 che si desidera
+- = GET as output from the function, 
+  the value to be passed as amplification
+  to the filter feedback to achieve
+  the desired T60 decay time
   
   ```
   // (samps,seconds) = give: samples of the filter, seconds we want for t60 decay
   dect60(samps,seconds) = 1/(10^((3*(((1000 / ma.SR)*samps)/1000))/seconds));
   ```
 
- 
-
 # Filtri Digitali
 
-### ONEZERO FILTER (FIR di I° Ordine)
+## Digital Filters
 
-_ è il segnale in ingresso, (_ rappresentazione segnale)
-    viene a seguito diviso in due percorsi paralleli <: 
-    uno in ritardo di un campione _' (' segna il ritardo di un sample)
-    e uno senza ritardo , _ (, segna il passaggio al secondo percorso)
-    vengono poi risommati in un segnale unico :> _ ;
-    il segnale in ritardo di un campione 
-    ha un controllo di ampiezza * feedforward
-    c'è un controllo di ampiezza generale * outgain
-    sulla funzione in uscita onezeroout
+### ONEZERO FILTER (1st Order FIR)
+
+_ represents the input signal, (_ denotes the signal)
+    it is then split into two parallel paths <: 
+    one delayed by one sample _' (' denotes one sample delay)
+    and one without delay , _ (, denotes transition to the second path)
+    they are then summed into a single signal :> _ ;
+    the delayed signal has a feedforward amplitude control * feedforward
+    there is a general amplitude control * outgain
+    on the output function onezeroout
 
 ```
 // import Standard Faust library
@@ -443,17 +388,17 @@ OZF(G,x) = (x:mem*G), x :> +;
 process = OZF(0.1);
 ```
 
-### ONEPOLE FILTER (IIR di I° Ordine)
+### ONEPOLE FILTER (1st Order IIR)
 
-+~ è il sommatore, e la retroazione 
-    degli argomenti dentro parentesi ()
-    _ è il segnale in ingresso, (_ rappresentazione segnale)
-    in ritardo di un campione _ (in automatico nella retroazione)
-    che entra : nel gain del controllo della retroazione * 1-feedback
-    lo stesso feedback controlla l'amplificazione in ingresso
-    del segnale non iniettato nella retroazione
-    c'è un controllo di ampiezza generale * outgain
-    sulla funzione in uscita onezeroout
++~ is the summation, and the feedback 
+    of the arguments inside parentheses ()
+    _ represents the input signal, (_ denotes the signal)
+    delayed by one sample _ (automatically in the feedback)
+    which enters : into the gain control of the feedback * 1-feedback
+    the same feedback controls the input amplification
+    of the signal not injected into the feedback
+    there is a general amplitude control * outgain
+    on the output function onezeroout
 
 ```
 // import Standard Faust library
@@ -473,13 +418,10 @@ OPF(CF,x) = OPFFBcircuit ~ _
 process = OPF(20000) <: _,_;
 ```
 
-### ONEPOLE Topology preserving transforms TPT
+### ONEPOLE Topology Preserving Transforms (TPT)
 
-Versione TPT del Onepole.
-
-OnepoleTPT(CF) = Frequency Cut in HZ
 TPT version of the One-Pole Filter by Vadim Zavalishin
-reference : (by Will Pirkle)
+reference: (by Will Pirkle)
 http://www.willpirkle.com/Downloads/AN-4VirtualAnalogFilters.2.0.pdf
 
 ```
@@ -504,23 +446,22 @@ OnepoleTPT(CF,x) = circuit ~ _ : ! , _
 process = OnepoleTPT(100);
 ```
 
-### FEEDFORWARD COMB FILTER (FIR of N° Order)
+### FEEDFORWARD COMB FILTER (Nth Order FIR)
 
-_ è il segnale in ingresso, (_ rappresentazione segnale)
-    viene a seguito diviso in due percorsi paralleli <: 
-    uno in ritardo di @(delaysamples) campioni
-    (dunque valore da passare esternamente)
-    e uno senza ritardo , _ (, segna il passaggio al secondo percorso)
-    vengono poi risommati in un segnale unico :> _ ;
+_ represents the input signal, (_ denotes the signal)
+    it is then split into two parallel paths <: 
+    one delayed by @(delaysamples) samples
+    (thus value to be passed externally)
+    and one without delay , _ (, denotes transition to the second path)
+    they are then summed into a single signal :> _ ;
 
-Nel feedback è già presente di default un campione di ritardo,
-ecco perché delaysamples-1.
+In the feedback, one sample of delay is already present by default,
+hence delaysamples-1.
 
-il segnale in ritardo di un campione 
-ha un controllo di ampiezza * feedforward
+the delayed signal has a feedforward amplitude control * feedforward
 
-c'è un controllo di ampiezza generale * outgain
-sulla funzione in uscita onezeroout
+there is a general amplitude control * outgain
+on the output function onezeroout
 
 ```
 // import Standard Faust library
@@ -533,20 +474,22 @@ ffcf(t, g, x) = (x@(t) * g), x :> +;
 process = no.noise * .1 : ffcf(100, 1);
 ```
 
-### FEEDBACK COMB FILTER (IIR di N° Ordine)
 
-+~ è il sommatore, e la retroazione 
-    degli argomenti dentro parentesi ()
-    _ è il segnale in ingresso, (_ rappresentazione segnale)
-    in ritardo di @(delaysamples) campioni 
-    (dunque valore da passare esternamente)
-    che entra : nel gain del controllo della retroazione * feedback
+### FEEDBACK COMB FILTER (Nth Order IIR)
 
-Nel feedback è già presente di default un campione di ritardo,
-ecco perché delaysamples-1.
++~ is the summation, and the feedback 
+    of the arguments inside parentheses ()
+    _ represents the input signal, (_ denotes the signal)
+    delayed by @(delaysamples) samples 
+    (thus value to be passed externally)
+    which enters : into the gain control of the feedback * feedback
 
-c'è un controllo di ampiezza generale * outgain
-sulla funzione in uscita combfeedbout
+In the feedback, one sample of delay is already present by default,
+hence delaysamples-1.
+
+there is a general amplitude control * outgain
+on the output function combfeedbout
+
 
 ```
 // import Standard Faust library
@@ -564,14 +507,16 @@ fbcf(del, g, x) = loop ~ _
 process = no.noise * .1 : fbcf(4480, .9);
 ```
 
-### Lowpass FEEDBACK COMB FILTER (IIR di N° Ordine)
 
-come filtro comb, ma all'interno della retroazione,
-    a seguito del feedback entra il segnale : nel onepole.
-    L'onepole è un lowpass dove si può controllare il taglio 
-    di frequenza tra 0. e 1. 
-    Nel feedback è già presente di default un campione di ritardo,
-    ecco perché delaysamples-1.
+### Lowpass FEEDBACK COMB FILTER (Nth Order IIR)
+
+similar to the comb filter, but within the feedback,
+    following the feedback enters the signal : into the onepole.
+    The onepole is a lowpass where the cutoff 
+    frequency can be controlled between 0. and 1. 
+    In the feedback, one sample of delay is already present by default,
+    hence delaysamples-1.
+
 
 ```
 // import Standard Faust library
@@ -593,18 +538,19 @@ lpfbcf(del, cf, x) = loop ~ _ : !, _
 process = _ * .1 : lpfbcf(2000, 10000);
 ```
 
+
 ### ALLPASS FILTER
 
-dalla somma (+ si passa : ad un cavo _ ed uno split <:
-        poi @ritardo e gain, in retroazione ~ alla somma iniziale.
-        filtergain controlla l'ampiezza dei due stati di guadagno, 
-        che sono nel filtro lo stesso valore ma positivo e negativo,
-        da una parte *-filtergain e da una parte *+filtergain.
-        Nel feedback è già presente di default un campione di ritardo,
-        ecco perché delaysamples-1.
-        Per mantenere invece la soglia di ritardo del valore delaysamples,
-        viene aggiunto un ritardo mem (del campione sottratto)
-        in coda, prima della somma di uscita dell'allpass
+from the sum (+ transitions : to a cable _ and a split <:
+        then @delay and gain, in feedback ~ to the initial sum.
+        filtergain controls the amplitude of the two gain states, 
+        which in the filter are the same value but positive and negative,
+        one side *-filtergain and one side *+filtergain.
+        In the feedback, one sample of delay is already present by default,
+        hence delaysamples-1.
+        To maintain the delay threshold of the value delaysamples,
+        a mem delay (of the subtracted sample) is added
+        at the end
 
 ```
 // import Standard Faust library
