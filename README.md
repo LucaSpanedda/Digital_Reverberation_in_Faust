@@ -114,13 +114,9 @@ by putting a number 1 and subtracting the same value from it
 but doing it at a delayed sample.
 
 Example:
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/095184bacec196ba5b8dbf83bfae14fbf1476fd5/REV.lib?plain=1#L11-L13
-```
-# files/dirac.dsp
-```
-```
-files/dirac.dsp
-```
+https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/0e4a77f524bf5da3c5e844bf6c53427ae1e62aba/files/dirac.dsp#L1-L7
+https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/0e4a77f524bf5da3c5e844bf6c53427ae1e62aba/files/dirac.dsp
+
 ## Some Methods for Implementing Recursive Circuits in the Faust Language
 
 We will illustrate 3 main methods:
