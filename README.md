@@ -115,6 +115,7 @@ but doing it at a delayed sample.
 
 Example:
 https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/095184bacec196ba5b8dbf83bfae14fbf1476fd5/REV.lib?plain=1#L11-L13
+[Contribution guidelines for this project](files/dirac.dsp)
 
 ## Some Methods for Implementing Recursive Circuits in the Faust Language
 
