@@ -1,6 +1,7 @@
 # Digital Reverberation
 
 Digital reverberation is a continually relevant and widely discussed topic in the realms of computer music and Digital Signal Processing, as well as electroacoustic music in general. Its applications and studies have involved both commercial and academic sectors. Consequently, over time, a complex history has developed, characterized by numerous ramifications and implications, leading to a proliferation of various methods and implementation topologies. In this study, we will delve into the subject in detail, examining the main existing implementations.
+https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/6e632f949d3f23eb26b6679f505484e3b6e079a9/REV.lib#L11-L13
 
 ## Reverberation
 
