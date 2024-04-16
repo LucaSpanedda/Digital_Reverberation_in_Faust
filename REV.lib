@@ -7,10 +7,10 @@ declare license "MIT license";
 // Import the standard Faust Libraries
 import("stdfaust.lib");
 
-
 //---------------------------------------------------------- BASIC FUNCTIONS ---
-// Dirac Impulse at Compile Time
-dirac = 1-1';
+// Dirac Impulse with delay lines - Impulse at Compile Time
+dirac = 1 - 1';
+// process = dirac, dirac;
 
 // (t) = give time in milliseconds we want to know in samples
 mstosamps(t) = (ma.SR/1000) * t : int;
