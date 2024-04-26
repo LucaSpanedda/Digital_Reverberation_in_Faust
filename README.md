@@ -458,7 +458,7 @@ TOM ERBE - UC SAN DIEGO - REVERB TOPOLOGIES AND DESIGN http://tre.ucsd.edu/wordp
 ARTIFICIAL REVERBERATION: su DSPRELATED [Artificial Reverberation | Physical Audio Signal Processing](https://www.dsprelated.com/freebooks/pasp/Artificial_Reverberation.html)
 
 Corey Kereliuk - Building a Reverb Plugin in Faust
-Keith Barr’s reverb architecture http://blog.reverberate.ca/post/faust-reverb/
+Keith Barr’s reverb architecture [Building a Reverb Plugin in Faust](https://web.archive.org/web/20210111064016/http://blog.reverberate.ca/post/faust-reverb/)
 
 Spin Semiconductor DSP Basics [Spin Semiconductor - DSP Basics](http://www.spinsemi.com/knowledge_base/dsp_basics.html) Spin Semiconductor Audio Effects [Spin Semiconductor - Effects](http://www.spinsemi.com/knowledge_base/effects.html#Reverberation)
 
