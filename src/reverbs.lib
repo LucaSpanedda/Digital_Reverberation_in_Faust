@@ -1,0 +1,422 @@
+import("stdfaust.lib");
+
+
+//- BASIC FUNCTIONS ------------------------------------------------------------
+
+// (t) = give time in milliseconds we want to know in samples
+msasamps(t) = (ma.SR / 1000) * t;
+
+// (t) = give time in seconds we want to know in samples
+sasamps(t) = ma.SR  * t;
+
+// (t) = give time in samples we want to know in milliseconds
+sampstoms(t) = (t * 1000) / ma.SR;
+
+// T60 DECAY TIME from Milliseconds
+// (ms, T60) = ms delay of the filter, seconds we want for t60 decay
+t60_ms(ms, t60) = pow(0.001, (ms / 1000) / t60);
+
+// Seconds
+// (sec, T60) = sec delay of the filter, seconds we want for t60 decay
+t60(sec, t60) = pow(0.001, sec / t60);
+
+// T60 DECAY TIME from Samples
+// (samples, T60) = sample delay of the filter, seconds we want for t60 decay
+t60_samps(samps, t60) = pow(0.001, (samps / ma.SR) / t60);
+
+
+//- FILTERS FUNCTIONS ----------------------------------------------------------
+
+// Onepole, g = give amplitude 0 to +/- 1 (open - close) to the delayed signal 
+op(b1) = _ * (1 - abs(b1)) : + ~ * (b1);
+//process = op;
+
+// Schroeder Feedback Comb Filter, (t, g) = 
+// give: delay time in samples, feedback gain 0-1
+fbcfSchroeder(t, g) = _ : + ~ (@(t - 1) * (g));
+
+// Lowpass Feedback Combfilter:
+// <https://ccrma.stanford.edu/~jos/pasp/Lowpass_Feedback_Comb_Filter.html>
+lbcf(t, fb, damp) = (+ : @ (max(0, (t - 1)))) ~ 
+    (*(1 - damp) : (+ ~ *(damp)) : *(fb)) : mem;
+
+//--------------------------------------------------------------- ALLPASS FILTER
+// Allpass
+// (t,g) = give: delay in samples, feedback gain 0-1
+apf(t, g) =    _ : (+ : _ <: @ (t  - 1), * (- g)) ~ * (g) : mem, _ : + : _; 
+
+// APF Time Variant
+sdelay(maxDelay, interpolationLen, delayLen, x) = 
+    loop ~ si.bus(4) : (! , ! , ! , ! , _)
+    with {
+        loop(lineState, incrState, lowerDelayState, upperDelayState) = 
+            line , incr , lowerDelay , upperDelay , output
+            with {
+                lowerReach = lineState == 0;
+                upperReach = lineState == 1;
+                lowerDelayChange = delayLen != lowerDelayState;
+                upperDelayChange = delayLen != upperDelayState;
+                incr = ba.if(   upperReach & upperDelayChange,
+                                -1.0 / interpolationLen,
+                                ba.if(  lowerReach & lowerDelayChange),
+                                        1.0 / interpolationLen,
+                                        incrState);
+                line = max(.0, min(1.0, lineState + incr));
+                lowerDelay = ba.if(upperReach, delayLen, lowerDelayState);
+                upperDelay = ba.if(lowerReach, delayLen, upperDelayState);
+                lowerDelayline = de.delay(maxDelay, lowerDelay, x) * (1.0 - line);
+                upperDelayline = de.delay(maxDelay, upperDelay, x) * line;
+                output = lowerDelayline + upperDelayline;
+            };
+    };
+allpassWerner(maxDel, intTime, del, g, x) = (loop : sdelay(maxDel, intTime, del - 1)) ~ _ : mem * D_g + x * g
+    with {
+        D_g = sqrt(1 - g * g);
+        loop(fb) = x * D_g - g * fb;
+    };
+
+
+//- MATRIX ---------------------------------------------------------------------
+// hadamard FDN Matrix
+butterfly(2) = si.bus(2) <: +, -;
+butterfly(N) = si.bus(N) <: ro.interleave(N/2,2), ro.interleave(N/2,2) : 
+    par(i, N/2, +), par(i, N/2, -);
+hadamard(2) = butterfly(2);
+hadamard(N) = butterfly(N) : (hadamard(N/2), hadamard(N/2));
+
+
+//- REVERBS --------------------------------------------------------------------
+
+//-----------------------------------------
+// CHAMBERLIN REVERB
+// ----------------------------------------
+// High-quality stereo reverberator:
+// Musical Applications of Microprocessor
+// ----------------------------------------
+// CHAMBERLIN REVERB
+chamberlinReverb = ap3ch <: apout1ch, apout2ch
+with{
+    ap3ch = apf(msasamps(49.6), 0.75) : apf(msasamps(34.75), 0.72) : 
+            apf(msasamps(24.18), 0.691);
+
+    apout1ch = apf(msasamps(17.85), 0.649) : apf(msasamps(10.98), 0.662);
+    apout2ch = apf(msasamps(18.01), 0.646) : apf(msasamps(10.82), 0.666);
+};
+//process = chamberlinReverb;
+
+// ----------------------------------------
+// CHAMBERLIN REVERB
+// with T60 Decay
+// ----------------------------------------
+// CHAMBERLIN REVERB
+// (seconds) = give: decay time in seconds of 60dB
+chamberlinDecay(seconds) = ap3ch <: apout1ch, apout2ch
+with{
+    ap3ch = apf(msasamps(49.6), t60_ms(49.6, seconds)) : 
+    apf(msasamps(34.75), t60_ms(34.75, seconds)) : 
+    apf(msasamps(24.18), t60_ms(24.18, seconds));
+
+    apout1ch = apf(msasamps(17.85), t60_ms(17.85, seconds)) : 
+    apf(msasamps(10.98), t60_ms(10.98, seconds));
+
+    apout2ch = apf(msasamps(18.01), t60_ms(18.01, seconds)) : 
+    apf(msasamps(10.82), t60_ms(10.82, seconds));
+};
+//process = chamberlinDecay(10);
+
+// ----------------------------------------
+// SCHROEDER-CHOWNING SATREV REVERBERATOR
+// ----------------------------------------
+/* 
+Simulazione di Riverbero secondo il modello di John Chowning.
+Modello SATREV, basato sul modello riverberante di Schroeder.
+4 Comb IIR Paralleli e 3 Allpass in serie.
+-------------------------------------------
+Nel 1962 Manfred Schroeder propone un’applicazione efficiente di riverberazione 
+digitale nel suo articolo “Natural Sounding Artificial Reverb”. 
+Schroeder propone l’utilizzo di filtri allpass e comb combinati fra di loro 
+per ottenere un riverbero che non colori (grazie ai filtri allpass) 
+e che crei una densità degli echi sufficiente a simulare la complessità 
+delle riflessioni date da un effetto di riverberazione naturale
+(almeno 1000 echi per secondo)
+*/
+satreverb = _ * 0.2 <: fbcfSchroeder(901, 0.805), 
+    fbcfSchroeder(778, 0.827), fbcfSchroeder(1011, 0.783), 
+    fbcfSchroeder(1123, 0.764) :> apf(125, 0.7) : 
+    apf(42, 0.7) : apf(12, 0.7) <: _ , _ * - 1;
+//process = satreverb;
+
+// ----------------------------------------
+// SCHROEDER SAMSON BOX REVERBERATOR
+// ----------------------------------------
+/* 
+Simulazione di Riverbero secondo il modello della 
+Samson Box - 1977 CCRMA.
+Modello SATREV, basato sul modello riverberante di Schroeder.
+3 Allpass in serie e 4 Comb IIR Paralleli.
+-------------------------------------------
+Nel 1962 Manfred Schroeder propone un’applicazione efficiente di riverberazione 
+digitale nel suo articolo “Natural Sounding Artificial Reverb”. 
+Schroeder propone l’utilizzo di filtri allpass e comb combinati fra di loro 
+per ottenere un riverbero che non colori (grazie ai filtri allpass) 
+e che crei una densità degli echi sufficiente a simulare la complessità 
+delle riflessioni date da un effetto di riverberazione naturale
+(almeno 1000 echi per secondo)
+-------------------------------------------
+// Sarebbe necessario decorrelare in uscita le somme dei comb
+// per avere un buon effetto spaziale.
+// nel modello originale è incluso un mixer con 4 differenti uscite
+// che hanno 4 differenti linee di ritardo, che sono :
+// A = z-0.046fs
+// B = z-0.057fs
+// C = z-0.041fs
+// D = z-0.054fs
+*/
+jcreverb = _ * 0.06 : apf(347, 0.7) : apf(113, 0.7) : 
+    apf(37, 0.7) <: fbcfSchroeder(1601, 0.802), fbcfSchroeder(1867, 0.733), 
+    fbcfSchroeder(2053, 0.753), fbcfSchroeder(2251, 0.733) : 
+    mix_mtx
+with{
+    mix_mtx = _,_,_,_ <: psum, - psum, asum, - asum : _,_,_,_;
+    psum = _,_,_,_ :> _;
+    asum = *(-1), _, *(-1), _ :> _;
+};
+//process = jcreverb;
+
+// ----------------------------------------
+// RIVERBERO DI MOORER
+// ----------------------------------------
+/* 
+Simulazione di Riverbero secondo il modello di James A. Moorer
+il punto sorgente che coincide col punto di ascolto
+-------------------------------------------
+Nel 1979 nella sua pubblicazione ”About This Reverberation Business” James
+Moorer, seguendo le proposte esposte da Schroeder nel suo articolo, 
+implementa a seguito una topologia che fa uso delle TDL (tapped delay lines) 
+per una simulazione delle prime riflessioni, 
+ed inserisce all’interno della retroazione del FBCF 
+(feedback comb filter) un filtro Lowpass, 
+creando così i filtri LBCF(lowpass feedback comb filter) per ottenere 
+una simulazione di assorbimento dell’aria all’interno 
+del suo modello di riverberazione.
+*/
+moorerReverb = _ * 0.1 : earlyReflections <: combSection + _
+with{
+    earlyReflections =  _ <: 
+        (_ @ sasamps(0.0043)) * 0.841,
+        (_ @ sasamps(0.0215)) * 0.504,
+        (_ @ sasamps(0.0225)) * 0.491,
+        (_ @ sasamps(0.0268)) * 0.379,
+        (_ @ sasamps(0.0270)) * 0.380,
+        (_ @ sasamps(0.0298)) * 0.346,
+        (_ @ sasamps(0.0458)) * 0.289,
+        (_ @ sasamps(0.0485)) * 0.272,
+        (_ @ sasamps(0.0572)) * 0.192,
+        (_ @ sasamps(0.0587)) * 0.193,
+        (_ @ sasamps(0.0595)) * 0.217,
+        (_ @ sasamps(0.0612)) * 0.181,
+        (_ @ sasamps(0.0707)) * 0.180,
+        (_ @ sasamps(0.0708)) * 0.181,
+        (_ @ sasamps(0.0726)) * 0.176,
+        (_ @ sasamps(0.0741)) * 0.142,
+        (_ @ sasamps(0.0753)) * 0.167,
+        (_ @ sasamps(0.0797)) * 0.134 :> _;
+
+    combSection = _ <: 
+        lbcf(sasamps(0.040), 0.95, 0.5),
+        lbcf(sasamps(0.041), 0.95, 0.5),
+        lbcf(sasamps(0.043), 0.95, 0.5),
+        lbcf(sasamps(0.055), 0.95, 0.5),
+        lbcf(sasamps(0.059), 0.95, 0.5),
+        lbcf(sasamps(0.061), 0.95, 0.5) :> _ :
+        apf(sasamps(0.007), -0.09683) @ sasamps(0.0017);
+};
+//process = moorerReverb;
+
+// ----------------------------------------
+// FREEVERB di Jezar at Dreampoint
+// ----------------------------------------
+/* 
+Simulazione di Riverbero di Schroeder/Moorer secondo il 
+modello di Jezar at Dreampoint. Utilizza 4 Allpass di Schroeder in serie, 
+ed 8 Schroeder-Moorer Filtered-feedback comb-filters in parallelo.
+-------------------------------------------
+Nel 1979 nella sua pubblicazione ”About This Reverberation Business” James
+Moorer, seguendo le proposte esposte da Schroeder nel suo articolo, 
+implementa a seguito una topologia che fa uso delle TDL (tapped delay lines) 
+per una simulazione delle prime riflessioni, 
+ed inserisce all’interno della retroazione del FBCF 
+(feedback comb filter) un filtro Lowpass, 
+creando così i filtri LBCF(lowpass feedback comb filter) per ottenere 
+una simulazione di assorbimento dell’aria all’interno 
+del suo modello di riverberazione.
+*/
+freeverb = _ * 0.1 : combSection : allpassSection
+with {
+    combSection = _ <: 
+    // 1557 samples at 44100 = ms 35.3061218
+    lbcf(msasamps(35.3061218), 0.84, 0.2),
+    // 1617 samples at 44100 = ms 36.6666679
+    lbcf(msasamps(36.6666679), 0.84, 0.2),
+    // 1491 samples at 44100 = ms 33.8095245
+    lbcf(msasamps(33.8095245), 0.84, 0.2),
+    // 1422 samples at 44100 = ms 32.2448997
+    lbcf(msasamps(32.2448997), 0.84, 0.2),
+    // 1277 samples at 44100 = ms 28.9569168
+    lbcf(msasamps(28.9569168), 0.84, 0.2),
+    // 1356 samples at 44100 = ms 30.7482986
+    lbcf(msasamps(30.7482986), 0.84, 0.2),
+    // 1188 samples at 44100 = ms 26.9387760
+    lbcf(msasamps(26.9387760), 0.84, 0.2),
+    // 1116 samples at 44100 = ms 25.3061218
+    lbcf(msasamps(25.3061218), 0.84, 0.2) :> _;
+
+    allpassSection = 
+    // 225 samples at 44100 = ms 5.1020408
+    apf(msasamps(5.10204080), -0.5) :
+    // 556 samples at 44100 = ms 12.6077099
+    apf(msasamps(12.6077099), -0.5) :
+    // 441 samples at 44100 = ms 10.0000000
+    apf(msasamps(10.0000000), -0.5) :
+    // 341 samples at 44100 = ms 7.7324262
+    apf(msasamps(7.73242620), -0.5);
+};
+//process = freeverb;
+
+// ----------------------------------------
+// FDN di Michael Gerzon, 
+// John Stautner / Miller Puckette
+// ----------------------------------------
+/*
+first ideas come from the michael gerzon studio 
+sound reverb articles of 1971 and 1972.
+Then nel 1982 Stautner e Puckette presentano nella 
+loro pubblicazione ”Designing multichannel reverberators” 
+un algoritmo di riverberazione multicanale chiamato: 
+”Feedback Delay Network” che tende a voler simulare 
+il comportamento delle riﬂessioni all’interno di una stanza, 
+utilizzando solo una serie di ﬁltri comb paralleli
+ma con le retroazioni interconnesse fra loro.
+This is a 4x4 example of the general design proposed. 
+*/
+fdnLossless = (inputPath : delaysPath : hadamardPath : normHadamard) ~ 
+si.bus(4) : delCompensation
+with{
+    t60(msDel, t60) = pow(0.001, msDel / t60);
+    inputPath = ro.interleave(4, 2) : par(i, 4, (_, _) :> _);
+    delay(ms) = _ @ (msasamps(ms) - 1);
+    delaysPath = delay(68), delay(77), delay(90), delay(99);
+    hadamardPath = hadamard(4);
+    normHadamard = par(i, 4, _ * (1.0 / sqrt(4)));
+    delCompensation = par(i, 4, mem);
+};
+//process = fdnLossless :> par(i, 2, _ / 2);
+
+fdn = (inputPath : opPath : delaysPath : hadamardPath : normHadamard : decay) ~ 
+si.bus(4) : delCompensation
+with{
+    t60(msDel, t60) = pow(0.001, msDel / t60);
+    inputPath = ro.interleave(4, 2) : par(i, 4, (_, _) :> _);
+    opPath = par(i, 4, op(0.4));
+    delay(ms) = _ @ (msasamps(ms) - 1);
+    delaysPath = delay(68), delay(77), delay(90), delay(99);
+    hadamardPath = hadamard(4);
+    normHadamard = par(i, 4, _ * (1.0 / sqrt(4)));
+    decay = _ * t60_ms(68, 1), _ * t60_ms(77, 1), 
+            _ * t60_ms(90, 1), _ * t60_ms(99, 1);
+    delCompensation = par(i, 4, mem);
+};
+//process = fdn :> par(i, 2, _ / 2);
+
+
+// ----------------------------------------
+// Keith Barr Allpass Loop
+// Implementation of Corey Kerliuk
+// ----------------------------------------
+// <https://github.com/coreyker/KBVerb>
+/*
+Reverb Model based on: Keith Barr Allpass Loop Reverb
+single allpass loop reverb
+*/
+ck_kbVerb(apfG, krt) = si.bus(2) : mix(ma.PI/2) : * (0.5), * (0.5) : procLeft, procRight : si.bus(2)
+with{	 
+    // stereo input mix
+    mix(theta) = si.bus(2) <: (*(c), *(-s), *(s), *(c)) : (+, +) : si.bus(2)
+	with {
+		c = cos(theta);
+		s = sin(theta);
+	};
+
+    // import prime numbers
+    primes = component("prime_numbers.dsp").primes;
+    // calculation of left and right indexes
+    ind_left(i)  = 100 + 10 * pow(2, i) : int;
+    ind_right(i) = 100 + 11 * pow(2, i) : int;
+
+    // allpass single section
+    section((n1, n2)) = apf(n1, - apfG) : apf(n2, - apfG) : _ @ int(0.75 * (n1 + n2));
+
+    // chain and ring functions
+    allpass_chain(((n1, n2), ns), x) = _ : section((n1, n2)) <: R(x, ns), _
+    with {
+    	R(x, ((n1, n2), ns)) = _,x : + : section((n1, n2)) <: R(x, ns), _;
+    	R(x, (n1, n2)) = _,x : + : section((n1, n2));
+    };
+    procMono(feedfwd_delays, feedback_delays, feedback_gain, x) = x : 
+    (+ : allpass_chain(feedfwd_delays, x)) ~ (_,x : + : section(feedback_delays) : 
+    *(feedback_gain)) :> _;
+    // left reverb
+	feedfwd_delays_left = par(i, 5, (ba.take((ind_left(i)), primes), ba.take((ind_left(i+1)), primes)));
+	feedback_delays_left = (ba.take(100, primes), ba.take(101, primes));
+	procLeft = procMono(feedfwd_delays_left, feedback_delays_left, krt);
+	// right reverb
+	feedfwd_delays_right = par(i, 4, (ba.take((ind_right(i)), primes), ba.take((ind_right(i+1)), primes)));
+	feedback_delays_right = (ba.take(97, primes), ba.take(99, primes));
+	procRight = procMono(feedfwd_delays_right, feedback_delays_right, krt);
+};
+//process = ck_kbVerb(0.7, 0.5);
+
+// ----------------------------------------
+// Luca Spanedda Allpass Loop
+// ----------------------------------------
+/*
+Reverb Model based on: Keith Barr Allpass Loop Reverb
+Luca Spanedda Single Loop
+*/
+lssl(parN, seqN, parspace, start, krt, apG) = network
+with{
+    // index of the primes numbers
+    primenumbers(index) = ba.take(index , list)
+    with{
+        list = component("prime_numbers.dsp").primes;
+    };
+    // modulated Allpass filter
+    apfMod(delsamples, samplesmod, freqmod) = ( + : _ <: 
+        delayMod(delsamples, samplesmod, freqmod), * (apG)) ~ 
+            * (- apG) : mem, _ : + : _
+        with{
+            delayMod(samples, samplesMod, freqMod, x) = delay
+            with{
+                modulation(f, samples) = ((os.osc(f) + 1) / 2) * samples;
+                delay = x : de.fdelay(samples, 
+                        samples - modulation(freqMod, samplesMod));
+            };
+        };
+    // reverb
+    network = (ro.interleave(parN, parN / (parN / 2)) : par(i, parN, si.bus(2) :> _) : 
+        par(i, parN, 
+            seq(k, seqN, 
+                apfMod( 
+                    (primenumbers((k + start) + (i * parspace)) : msasamps), 
+                    (primenumbers((k + start) + (i * parspace)) / 100 : msasamps), 
+                    (0.5 / primenumbers((k + start) + (i * parspace)) : msasamps)
+                ) 
+            ) :
+        _ * krt) : ro.crossNM(parN - 1, 1)) ~ si.bus(parN);
+};
+// output
+//process = (_ * 0.25, _ * 0.25) <: lssl(8, 2, 5, 10, .90, .65) :> si.bus(2);
+
+//seqN(4)
+//function(i) = section((100 * (i + 1), 200 * (i + 1)));
+//seqN(N, x) = seq(i, N, (_ + x : function(i) <: _, _), si.bus(i + 1)) : (_, !, si.bus(N-1), !);
