@@ -24,6 +24,9 @@ t60(sec, t60) = pow(0.001, sec / t60);
 // (samples, T60) = sample delay of the filter, seconds we want for t60 decay
 t60_samps(samps, t60) = pow(0.001, (samps / ma.SR) / t60);
 
+// from Original Sample Rate (origSR), (samples) to current Sample Rate
+adaptSR(origSR, samples) = (samples * ma.SR / origSR) : max(ma.EPSILON, int); 
+
 
 //- FILTERS FUNCTIONS ----------------------------------------------------------
 
@@ -349,12 +352,9 @@ with{
 };
 //process = fdn :> par(i, 2, _ / 2);
 
-
 // ----------------------------------------
 // Keith Barr Allpass Loop
-// Implementation of Corey Kerliuk
 // ----------------------------------------
-// <https://github.com/coreyker/KBVerb>
 /*
 Keith Barr was one of the co-founders of MXR, 
 back in 1973. After MXR, he founded Alesis. 
@@ -371,8 +371,45 @@ as a natural reverb tail.
 The reverb can usually have a mono input 
 (as from a single source), 
 but benefits from a stereo output which gives 
-the listener a more full, surrounding reverberant image
+the listener a more full, surrounding reverberant image.
+// ----------------------------------------
+Faust porting of: Reverb 1 program from the Spin Semiconductor FV-1 internal ROM
+rom_rev1.spn - from:
+<https://www.spinsemi.com/programs.php#:~:text=Keith%20Barr-,rom_rev1.spn,-ROM%20reverb%202>
+Keith Barr article on Reverberation:
+<https://www.spinsemi.com/knowledge_base/effects.html#Reverberation>
+FV-1 Instructions and Syntax:
+<https://www.spinsemi.com/knowledge_base/inst_syntax.html>
 */
+kb_rom_rev1(rt, damp, L, R) = aploop
+with{
+// input allpass sections
+apSec(0) = apf(adaptSR(32768, 156), 0.5) : apf(adaptSR(32768, 223), 0.5) : apf(adaptSR(32768, 332), 0.5) : apf(adaptSR(32768, 548), 0.5);
+apSec(1) = apf(adaptSR(32768, 186), 0.5) : apf(adaptSR(32768, 253), 0.5) : apf(adaptSR(32768, 302), 0.5) : apf(adaptSR(32768, 498), 0.5);
+
+// allpass loop sections
+loopSec(0) = _ @ (adaptSR(32768, 4568) - 1) : _ * rt : _ + (L : apSec(0)) : apfMod(os.osc(0.5), adaptSR(32768, 1251), adaptSR(32768, 20), 0.6) : apf(adaptSR(32768, 1751), 0.6) : op(damp) : op(- 0.05);
+loopSec(1) = _ @ adaptSR(32768, 5859) : _ * rt : apf(adaptSR(32768, 1443), 0.6) : apf(adaptSR(32768, 1343), 0.6) : op(damp) : op(- 0.05);
+loopSec(2) = _ @ adaptSR(32768, 4145) : _ * rt : _ + (R : apSec(1)) : apfMod(os.osc(0.5), adaptSR(32768, 1582), adaptSR(32768, 20), 0.6) : apf(adaptSR(32768, 1981), 0.6) : op(damp) : op(- 0.05);
+loopSec(3) = _ @ adaptSR(32768, 3476) : _ * rt : apf(adaptSR(32768, 1274), 0.6) : apf(adaptSR(32768, 1382), 0.6) : op(damp) : op(- 0.05);
+
+// output delay taps
+outTaps = ((_ * 1.5 @ adaptSR(32768, 2630), _ * 1.2 @ adaptSR(32768, 1943), _ * 1.0 @ adaptSR(32768, 3200), _ * 0.8 @ adaptSR(32768, 4016)) :> +),
+((_ * 1.0 @ adaptSR(32768, 2420), _ * 0.8 @ adaptSR(32768, 2631), _ * 1.5 @ adaptSR(32768, 1163), _ * 1.2 @ adaptSR(32768, 3330)) :> +);
+
+// complete allpass loop
+aploop = (_ : loopSec(0) <: ((loopSec(1) <: ((_ : loopSec(2) <: loopSec(3), _), _)), _)) ~ _ : ro.cross(4) <: outTaps; 
+};
+//process = kb_rom_rev1(0.95, 0.5); 
+
+// ----------------------------------------
+// Corey Kereliuk Allpass Loop
+// ----------------------------------------
+/*
+Reverb Model based on: Keith Barr Allpass Loop Reverb
+Corey Kereliuk implementation of the Reverb
+*/
+// <https://github.com/coreyker/KBVerb>
 ck_kbVerb(apfG, krt) = si.bus(2) : mix(ma.PI/2) : * (0.5), * (0.5) : procLeft, procRight : si.bus(2)
 with{	 
     // stereo input mix
@@ -417,6 +454,7 @@ with{
 /*
 Reverb Model based on: Keith Barr Allpass Loop Reverb
 Luca Spanedda Single Loop with modulated AP
+L(uca) S(panedda) S(ingle) L(oop)
 */
 lssl(parN, seqN, parspace, start, krt, apG) = network
 with{
@@ -439,7 +477,46 @@ with{
         _ * krt) : ro.crossNM(parN - 1, 1)) ~ si.bus(parN);
 };
 // output
-//process = (_ * 0.25, _ * 0.25) <: lssl(8, 2, 5, 10, 1.0, .65) :> si.bus(2);
+//process = (_ * 0.25, _ * 0.25) <: lssl(8, 2, 5, 10, 0.9, .65) :> si.bus(2);
+
+// ----------------------------------------
+// Dattorro reverb topology. 
+// Greisinger Lexicon 480L version 
+// ----------------------------------------
+/*
+from:
+TOM ERBE - UC SAN DIEGO REVERB TOPOLOGIES AND DESIG:
+<https://tre.ucsd.edu/wordpress/wp-content/uploads/2018/10/reverbtopo.pdf>
+Pure Data code:
+<https://tre.ucsd.edu/wordpress/?p=625>
+*/
+greisingerReverb(decay, damp) = (si.bus(2) :> _ * (1 / 2) : predelay : op(damp) : apfsec) <: si.bus(2) : (ro.interleave(2, 2) : (par(i, 2, (_, _) :> + : loopsec(i)) : ro.crossNM(4, 1), si.bus(3))) ~ si.bus(2) : (si.block(2), si.bus(6)) : routing
+with{
+    predelay = _ @ msasamps(30);
+
+    apfsec = apf(msasamps(4.771), 0.75) : apf(msasamps(3.595), 0.75) :
+        apf(msasamps(12.73), 0.625) : apf(msasamps(9.307), 0.625);
+
+    loopsec(0) = apfMod(os.osc(0.10), msasamps(30.51), msasamps(4), 0.7) : 
+        _ @ msasamps(141.69) : (_ <: _, _) : (op(damp), _) : 
+        (apf(msasamps(89.24), 0.5) <: _, _), _ : 
+        (_ @ (msasamps(106.28) - 1) <: _, mem), _, _ :  
+        (_ * decay, _, _, _) : (_, ro.cross(3));
+
+    loopsec(1) = apfMod(os.osc(0.07), msasamps(22.58), msasamps(4), 0.7) : 
+        _ @ msasamps(149.62) : (_ <: _, _) : (op(damp), _) : 
+        (apf(msasamps(60.48), 0.5) <: _, _), _ : 
+        (_ @ (msasamps(125.00) - 1) <: _, mem), _, _ :  
+        (_ * decay, _, _, _) : (_, ro.cross(3));
+
+    routing(dA0, ap0, dB0, dA1, ap1, dB1) = 
+        ((dA0 @ msasamps(8.90), dA0 @ msasamps(99.8), ap0 @ msasamps(64.2), dB0 @ msasamps(67),
+          dA1 @ msasamps(66.8), ap1 @ msasamps(6.3), dB1 @ msasamps(35.8),  0) :> +),
+        ((dA0 @ msasamps(70.8), ap0 @ msasamps(11.2), dB0 @ msasamps(4.1), dA1 @ msasamps(11.8), 
+          dA1 @ msasamps(121.7), ap1 @ msasamps(41.2), dB1 @ msasamps(89.7), 0) :> +);
+};
+//process = greisingerReverb(0.8, 0.4); 
+
 
 //seqN(4)
 //function(i) = section((100 * (i + 1), 200 * (i + 1)));
