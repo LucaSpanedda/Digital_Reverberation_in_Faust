@@ -495,7 +495,7 @@ A key innovation in Moorer's approach was the use of a tapped delay line to simu
 Additionally, Moorer enhanced his reverb model by incorporating a first-order low-pass filter in the feedback loop of the six comb filters. This filter simulates the absorption effects of air, which are influenced by factors such as humidity, temperature, the frequency of sound, and the distance from the sound source. Moorer discusses how atmospheric conditions affect the intensity of sound as it travels, and this low-pass filter helped account for the natural damping of higher frequencies over distance.
 This combination of early reflections through a tapped delay line and the low-pass feedback filters for air absorption marked a significant step forward in creating more realistic digital reverberation, and Moorer's work laid the foundation for many of the reverberation algorithms in use today.
 
-```
+```faust
 // Moorer Reverb
 moorerReverb = _ * 0.1 : earlyReflections <: combSection + _
 with {
