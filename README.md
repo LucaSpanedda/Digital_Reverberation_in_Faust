@@ -114,7 +114,15 @@ by putting a number 1 and subtracting the same value from it
 but doing it at a delayed sample.
 
 Example:
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/0e4a77f524bf5da3c5e844bf6c53427ae1e62aba/files/dirac.dsp#L1-L7
+```faust
+// import Standard Faust library 
+// https://github.com/grame-cncm/faustlibraries/ 
+import("stdfaust.lib"); 
+  
+// Dirac Impulse with delay lines - Impulse at Compile Time 
+dirac = 1 - 1'; 
+process = dirac, dirac; 
+```
 
 ## Some Methods for Implementing Recursive Circuits in the Faust Language
 
@@ -136,8 +144,9 @@ We will illustrate 3 main methods:
   the parameters of the code,
   and say that that function is equal to
   exit from the with with ~ _
-  example:
   
+  Example:
+  ```faust
       function_with(argument1, argument2) = out_with ~ _
        with{  
         section1 = _ * argument1;
@@ -146,7 +155,8 @@ We will illustrate 3 main methods:
         };
       
         where out_with ~ _ returns to itself.
-
+  ```
+  
 Moreover, with in Faust allows declaring variables
 that are not pointed to from outside the code but only
 from the belonging function; in this case
@@ -158,8 +168,28 @@ the function to which with belongs is "function_with".
   recursively, similar to how
   recurrence equations are written.
   
-example:
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/51ad8ef2df32e9f9d7c9b60cb7696e3529d3aa28/files/lowpassletrec.dsp#L1-L19
+Example:
+```faust
+// import Standard Faust library  
+// https://github.com/grame-cncm/faustlibraries/  
+import("stdfaust.lib"); 
+  
+// letrec function 
+lowpass(cf, x) = y 
+// letrec definition 
+     letrec { 
+         'y = b0 * x - a1 * y; 
+     } 
+     // inside the letrec function 
+     with { 
+         b0 = 1 + a1; 
+         a1 = exp(-w(cf)) * -1; 
+         w(f) = 2 * ma.PI * f / ma.SR; 
+     }; 
+  
+ // Output of the letrec function 
+ process = lowpass(100, no.noise) <: si.bus(2); 
+```
 
 ## Conversion of Milliseconds to Samples and Vice Versa
 
@@ -289,8 +319,22 @@ input in the delay 10samp --> -1, output from the delay 19samp +1 = 20out
 and so on...
 
 Let's proceed with an implementation:
-
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/51ad8ef2df32e9f9d7c9b60cb7696e3529d3aa28/files/sampdel.dsp#L1-L14
+```faust
+// import Standard Faust library  
+// https://github.com/grame-cncm/faustlibraries/  
+import("stdfaust.lib"); 
+  
+sampdel = ma.SR;  
+// sample rate - ma.SR 
+  
+process =   _ :  
+             // input signal goes in 
+             +~ @(sampdel -1) *(0.8)  
+             // delay line with feedback: +~ 
+             : mem 
+             // output goes to a single sample delay 
+             <: si.bus(2); 
+```
 
 ## T60 Decay Calculation
 
@@ -312,9 +356,17 @@ Insert the following arguments into the function:
   the value to be passed as amplification
   to the filter feedback to achieve
   the desired T60 decay time
-  
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/52b221c9d6405bd762aa0b681a9f47fbbe08ad64/files/t60.dsp#L1-L6
-  
+
+```faust
+// T60 DECAY TIME from Milliseconds
+// (ms, T60) = ms delay of the filter, seconds we want for t60 decay
+t60_ms(ms, t60) = pow(0.001, (ms / 1000) / t60);
+
+// formula 2 
+// (samps,seconds) = give: samples of the filter, seconds we want for t60 decay 
+dect60(samps,seconds) = 1/(10^((3*(((1000 / ma.SR)*samps)/1000))/seconds)); 
+```
+
 # Digital Filters
 
 ### ONEZERO FILTER (1st Order FIR)
@@ -328,7 +380,18 @@ _ represents the input signal, (_ denotes the signal)
     there is a general amplitude control * outgain
     on the output function onezeroout
 
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/d83be7d48b5450844d8f5b0071b993a8382e4621/files/ozf.dsp#L1-L10
+```faust
+ // import Standard Faust library 
+ // https://github.com/grame-cncm/faustlibraries/ 
+ import("stdfaust.lib"); 
+  
+  
+ // (G) = G=give amplitude 0-1(open-close) to the delayed signal 
+ ozf(G) = _ <: ((_ : mem * G), _) :> +; 
+  
+ // out 
+ process = ozf(0.1); 
+```
 
 ### ONEPOLE FILTER (1st Order IIR)
 
@@ -342,7 +405,22 @@ https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/d83be7d48b54
     there is a general amplitude control * outgain
     on the output function onezeroout
 
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/4a690fded18ca5b94d3da2064aaa063386786236/files/opf.dsp#L1-L14
+```faust
+ // import Standard Faust library 
+ // https://github.com/grame-cncm/faustlibraries/ 
+ import("stdfaust.lib"); 
+  
+ // (G)  = give amplitude 1-0 (open-close) for the lowpass cut 
+ // (CF) = Frequency Cut in HZ 
+ OPF(CF,x) = OPFFBcircuit ~ _  
+     with{ 
+         g(x) = x / (1.0 + x); 
+         G = tan(CF * ma.PI / ma.SR):g; 
+         OPFFBcircuit(y) = x*G+(y*(1-G)); 
+         }; 
+  
+ process = OPF(20000) <: si.bus(2); 
+```
 
 ### ONEPOLE Topology Preserving Transforms (TPT)
 
@@ -350,7 +428,26 @@ TPT version of the One-Pole Filter by Vadim Zavalishin
 reference: (by Will Pirkle)
 http://www.willpirkle.com/Downloads/AN-4VirtualAnalogFilters.2.0.pdf
 
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/b1efcf53d94061d4703ed63be0317f3833b5a4a1/files/opftpt.dsp#L1-L18
+```faust
+ // import Standard Faust library 
+ // https://github.com/grame-cncm/faustlibraries/ 
+ import("stdfaust.lib"); 
+  
+ OnepoleTPT(CF,x) = circuit ~ _ : ! , _ 
+     with { 
+         g = tan(CF * ma.PI / ma.SR); 
+         G = g / (1.0 + g); 
+         circuit(sig) = u , lp 
+             with { 
+                 v = (x - sig) * G; 
+                 u = v + lp; 
+                 lp = v + sig; 
+             }; 
+     }; 
+  
+ // out 
+ process = OnepoleTPT(100); 
+```
 
 ### FEEDFORWARD COMB FILTER (Nth Order FIR)
 
@@ -369,7 +466,15 @@ the delayed signal has a feedforward amplitude control * feedforward
 there is a general amplitude control * outgain
 on the output function onezeroout
 
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/c3d5fae9d54061deac8c2b719f8d065dccc1ad26/files/ffcf.dsp#L1-L7
+ ```faust
+ // import Standard Faust library 
+ // https://github.com/grame-cncm/faustlibraries/ 
+ import("stdfaust.lib"); 
+  
+ // (t,g) = delay time in samples, filter gain 0-1 
+ ffcf(t, g, x) = (x@(t) * g), x :> +; 
+ process = _ * .1 : ffcf(100, 1); 
+ ```
 
 ### FEEDBACK COMB FILTER (Nth Order IIR)
 
@@ -386,7 +491,20 @@ hence delaysamples-1.
 there is a general amplitude control * outgain
 on the output function combfeedbout
 
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/cbb2d41fcad235bc4e6170bc099f3d7e736f0915/files/fbcf.dsp#L1-L12
+```faust
+ // import Standard Faust library 
+ // https://github.com/grame-cncm/faustlibraries/ 
+ import("stdfaust.lib"); 
+  
+ // Feedback Comb Filter. FBComb(Del,G,signal)  
+ // (Del, G) = DEL=delay time in samples. G=feedback gain 0-1 
+ fbcf(del, g, x) = loop ~ _  
+     with { 
+         loop(y) = x + y@(del - 1) * g; 
+     }; 
+  
+ process = _ * .1 : fbcf(4480, .9); 
+```
 
 ### Lowpass FEEDBACK COMB FILTER (Nth Order IIR)
 
@@ -397,7 +515,24 @@ similar to the comb filter, but within the feedback,
     In the feedback, one sample of delay is already present by default,
     hence delaysamples-1.
 
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/35524fa6d329f856c2dd6a9057fbf2b296c810dc/files/lpfbcf.dsp#L1-L16
+```faust
+ // import Standard Faust library 
+ // https://github.com/grame-cncm/faustlibraries/ 
+ import("stdfaust.lib"); 
+  
+ // LPFBC(Del, FCut) = give: delay samps, -feedback gain 0-1-, lowpass Freq.Cut HZ 
+ lpfbcf(del, cf, x) = loop ~ _ : !, _ 
+     with { 
+         onepole(CF, x) = loop ~ _  
+             with{ 
+                 g(x) = x / (1.0 + x); 
+                 G = tan(CF * ma.PI / ma.SR):g; 
+                 loop(y) = x * G + (y * (1 - G)); 
+             }; 
+         loop(y) = x + y@(del - 1) <: onepole(cf), _; 
+     }; 
+ process = _ * .1 : lpfbcf(2000, 10000); 
+```
 
 ### ALLPASS FILTER
 
@@ -412,11 +547,28 @@ from the sum (+ transitions : to a cable _ and a split <:
         a mem delay (of the subtracted sample) is added
         at the end
 
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/ad119f43d322581c8316026c97fe35518b863284/files/apf.dsp#L1-L7
+```faust
+ // Allpass
+ // (t,g) = give: delay in samples, feedback gain 0-1
+ apf(t, g) =    _ : (+ : _ <: @ (t  - 1), * (- g)) ~ * (g) : mem, _ : + : _;
+ process = _ * .1 <: apf(100, .5); 
+```
 
 ### Modulated ALLPASS FILTER
 
-https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/19acaf236017bfa39c46172a60375fbe3df51118/files/modapf.dsp#L1-L16
+```faust
+// delay modulated : mod = mod source +/- 1, t = del in samps, tMod = mod in samps
+delaymod(mod, t, tMod) = de.fdelay(tMax, modIndx)
+with{
+    tMax = t + tMod;
+    modIndx = t + mod * tMod;
+};
+
+// modulated Allpass filter
+apfMod(mod, t, tMod, g) = _ : (+ : _ <: delaymod(mod, t - 1, tMod), * (- g)) ~ * (g) : mem, _ : + : _;
+
+process = apfMod(os.osc(0.10), 19200, 100, 0.7)
+```
 
 # Topologies and Design of Digital Reverbs
 
