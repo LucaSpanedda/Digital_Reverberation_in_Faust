@@ -426,7 +426,7 @@ The Chamberlin Reverb is named after Hal Chamberlin, a pioneer in digital sound 
 At its core, the Chamberlin Reverb uses a network of all-pass filters (APF) to create a dense and natural-sounding reverberation effect. 
 The model is particularly effective at simulating small acoustic spaces, such as rooms or chambers, and is designed with simplicity in mind, making it computationally efficient. This efficiency made it suitable for the early digital processors with limited resources.
 
-```
+```faust
 // Chamberlin Reverb
 chamberlinReverb = ap3ch <: apout1ch, apout2ch
 with {
@@ -441,7 +441,7 @@ process = chamberlinReverb;
 
 This version includes a decay time T60 control in the comb-allpass filters, representing the time required for the signal to decay by 60 dB.
 
-```
+```faust
 // Chamberlin Reverb with T60 Decay
 chamberlinDecay(seconds) = ap3ch <: apout1ch, apout2ch
 with {
@@ -460,7 +460,7 @@ process = chamberlinDecay(10);
 
 The Schroeder-Chowning SATREV Reverberator is a landmark in the history of algorithmic reverb design, based on the design proposed by Manfred Schroeder and refined by John Chowning, this model combines 4 parallel comb filters with 3 serial all-pass filters (drawn from a 1971 MUS10 software listing).
 
-```
+```faust
 // Schroeder-Chowning SATREV Reverberator
 satreverb = _ * 0.2 <: fbcfSchroeder(901, 0.805), 
     fbcfSchroeder(778, 0.827), fbcfSchroeder(1011, 0.783), 
@@ -474,7 +474,7 @@ In October 1977, CCRMA took delivery of the Systems Concepts Digital Synthesizer
 This reverberator developed for this system, which remains known as JCREV, builds upon the earlier reverberation models by Schroeder but expanding on them with improvements that catered to more complex, real-time audio processing requirements.
 This model includes 3 serial all-pass filters and 4 parallel comb filters.
 
-```
+```faust
 // Schroeder Samson Box Reverberator
 jcreverb = _ * 0.06 : apf(347, 0.7) : apf(113, 0.7) : 
     apf(37, 0.7) <: fbcfSchroeder(1601, 0.802), fbcfSchroeder(1867, 0.733), 
