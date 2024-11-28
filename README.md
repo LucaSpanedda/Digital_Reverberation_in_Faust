@@ -531,6 +531,216 @@ with {
 process = moorerReverb;
 ```
 
+### Freeverb
+
+A more recently developed Schroeder/Moorer Reverberation Simulation 
+is ``Freeverb`` -- a public domain C++ program by 
+``Jezar at Dreampoint`` used extensively in the 
+free-software world. 
+It uses four Schroeder allpasses in series and 
+eight parallel Schroeder-Moorer filtered-feedback 
+comb-filters for each audio channel, 
+and is said to be especially well tuned.
+
+```faust
+freeverb = _ * 0.1 : combSection : allpassSection
+with {
+    combSection = _ <: 
+    // 1557 samples at 44100 = ms 35.3061218
+    lbcf(msasamps(35.3061218), 0.84, 0.2),
+    // 1617 samples at 44100 = ms 36.6666679
+    lbcf(msasamps(36.6666679), 0.84, 0.2),
+    // 1491 samples at 44100 = ms 33.8095245
+    lbcf(msasamps(33.8095245), 0.84, 0.2),
+    // 1422 samples at 44100 = ms 32.2448997
+    lbcf(msasamps(32.2448997), 0.84, 0.2),
+    // 1277 samples at 44100 = ms 28.9569168
+    lbcf(msasamps(28.9569168), 0.84, 0.2),
+    // 1356 samples at 44100 = ms 30.7482986
+    lbcf(msasamps(30.7482986), 0.84, 0.2),
+    // 1188 samples at 44100 = ms 26.9387760
+    lbcf(msasamps(26.9387760), 0.84, 0.2),
+    // 1116 samples at 44100 = ms 25.3061218
+    lbcf(msasamps(25.3061218), 0.84, 0.2) :> _;
+
+    allpassSection = 
+    // 225 samples at 44100 = ms 5.1020408
+    apf(msasamps(5.10204080), -0.5) :
+    // 556 samples at 44100 = ms 12.6077099
+    apf(msasamps(12.6077099), -0.5) :
+    // 441 samples at 44100 = ms 10.0000000
+    apf(msasamps(10.0000000), -0.5) :
+    // 341 samples at 44100 = ms 7.7324262
+    apf(msasamps(7.73242620), -0.5);
+};
+process = freeverb;
+```
+
+### Feedback Delay Network (FDN)
+
+The first ideas originate from Michael Gerzon's 
+Studio Sound reverb articles from 1971 and 1972.
+Later, in 1982, Stautner and Puckette introduced a 
+multichannel reverberation algorithm in their paper 
+“Designing Multichannel Reverberators.” 
+The algorithm, called the Feedback Delay Network (FDN), 
+aims to simulate the behavior of reflections 
+within a room by using only a series of parallel 
+comb filters with interconnected feedback paths.
+Below is a 4x4 example of the general design they proposed.
+
+```faust
+fdnLossless = (inputPath : delaysPath : hadamardPath : normHadamard) ~ 
+si.bus(4) : delCompensation
+with{
+    t60(msDel, t60) = pow(0.001, msDel / t60);
+    inputPath = ro.interleave(4, 2) : par(i, 4, (_, _) :> _);
+    delay(ms) = _ @ (msasamps(ms) - 1);
+    delaysPath = delay(68), delay(77), delay(90), delay(99);
+    hadamardPath = hadamard(4);
+    normHadamard = par(i, 4, _ * (1.0 / sqrt(4)));
+    delCompensation = par(i, 4, mem);
+};
+//process = fdnLossless :> par(i, 2, _ / 2);
+
+fdn = (inputPath : opPath : delaysPath : hadamardPath : normHadamard : decay) ~ 
+si.bus(4) : delCompensation
+with{
+    t60(msDel, t60) = pow(0.001, msDel / t60);
+    inputPath = ro.interleave(4, 2) : par(i, 4, (_, _) :> _);
+    opPath = par(i, 4, op(0.4));
+    delay(ms) = _ @ (msasamps(ms) - 1);
+    delaysPath = delay(68), delay(77), delay(90), delay(99);
+    hadamardPath = hadamard(4);
+    normHadamard = par(i, 4, _ * (1.0 / sqrt(4)));
+    decay = _ * t60_ms(68, 1), _ * t60_ms(77, 1), 
+            _ * t60_ms(90, 1), _ * t60_ms(99, 1);
+    delCompensation = par(i, 4, mem);
+};
+process = fdn :> par(i, 2, _ / 2);
+```
+
+### Keith Barr Allpass Loop
+
+Keith Barr was one of the co-founders of MXR, 
+back in 1973. After MXR, he founded Alesis. 
+Most recently, he designed the FV-1 chip for Spin Semiconductor.
+His Allpass Loop Reverb is a simplified yet effective model, 
+utilizing a single allpass filter within a feedback loop.
+When multiple delays and all pass filters are placed into a loop, 
+sound injected into the loop will recirculate, 
+and the density of any impulse will increase as the signal 
+passes successively through the allpass filters. 
+The result, after a short period of time, 
+will be a wash of sound, completely diffused 
+as a natural reverb tail. 
+The reverb can usually have a mono input 
+(as from a single source), 
+but benefits from a stereo output which gives 
+the listener a more full, surrounding reverberant image.
+
+Here a Faust porting of: Reverb 1 program from the Spin Semiconductor FV-1 internal ROM
+
+```faust
+kb_rom_rev1(rt, damp, L, R) = aploop
+with{
+// input allpass sections
+apSec(0) = apf(adaptSR(32768, 156), 0.5) : apf(adaptSR(32768, 223), 0.5) : apf(adaptSR(32768, 332), 0.5) : apf(adaptSR(32768, 548), 0.5);
+apSec(1) = apf(adaptSR(32768, 186), 0.5) : apf(adaptSR(32768, 253), 0.5) : apf(adaptSR(32768, 302), 0.5) : apf(adaptSR(32768, 498), 0.5);
+
+// allpass loop sections
+loopSec(0) = _ @ (adaptSR(32768, 4568) - 1) : _ * rt : _ + (L : apSec(0)) : apfMod(os.osc(0.5), adaptSR(32768, 1251), adaptSR(32768, 20), 0.6) : apf(adaptSR(32768, 1751), 0.6) : op(damp) : op(- 0.05);
+loopSec(1) = _ @ adaptSR(32768, 5859) : _ * rt : apf(adaptSR(32768, 1443), 0.6) : apf(adaptSR(32768, 1343), 0.6) : op(damp) : op(- 0.05);
+loopSec(2) = _ @ adaptSR(32768, 4145) : _ * rt : _ + (R : apSec(1)) : apfMod(os.osc(0.5), adaptSR(32768, 1582), adaptSR(32768, 20), 0.6) : apf(adaptSR(32768, 1981), 0.6) : op(damp) : op(- 0.05);
+loopSec(3) = _ @ adaptSR(32768, 3476) : _ * rt : apf(adaptSR(32768, 1274), 0.6) : apf(adaptSR(32768, 1382), 0.6) : op(damp) : op(- 0.05);
+
+// output delay taps
+outTaps = ((_ * 1.5 @ adaptSR(32768, 2630), _ * 1.2 @ adaptSR(32768, 1943), _ * 1.0 @ adaptSR(32768, 3200), _ * 0.8 @ adaptSR(32768, 4016)) :> +),
+((_ * 1.0 @ adaptSR(32768, 2420), _ * 0.8 @ adaptSR(32768, 2631), _ * 1.5 @ adaptSR(32768, 1163), _ * 1.2 @ adaptSR(32768, 3330)) :> +);
+
+// complete allpass loop
+aploop = (_ : loopSec(0) <: ((loopSec(1) <: ((_ : loopSec(2) <: loopSec(3), _), _)), _)) ~ _ : ro.cross(4) <: outTaps; 
+};
+process = kb_rom_rev1(0.95, 0.5); 
+```
+
+Here another Reverb Model based on the Keith Barr Allpass Loop Reverb.
+A Corey Kereliuk's implementation of the Reverb.
+
+```faust
+ck_kbVerb(apfG, krt) = si.bus(2) : mix(ma.PI/2) : * (0.5), * (0.5) : procLeft, procRight : si.bus(2)
+with{	 
+    // stereo input mix
+    mix(theta) = si.bus(2) <: (*(c), *(-s), *(s), *(c)) : (+, +) : si.bus(2)
+	with {
+		c = cos(theta);
+		s = sin(theta);
+	};
+
+    // import prime numbers
+    primes = component("prime_numbers.dsp").primes;
+    // calculation of left and right indexes
+    ind_left(i)  = 100 + 10 * pow(2, i) : int;
+    ind_right(i) = 100 + 11 * pow(2, i) : int;
+
+    // allpass single section
+    section((n1, n2)) = apf(n1, - apfG) : apf(n2, - apfG) : _ @ int(0.75 * (n1 + n2));
+
+    // chain and ring functions
+    allpass_chain(((n1, n2), ns), x) = _ : section((n1, n2)) <: R(x, ns), _
+    with {
+    	R(x, ((n1, n2), ns)) = _,x : + : section((n1, n2)) <: R(x, ns), _;
+    	R(x, (n1, n2)) = _,x : + : section((n1, n2));
+    };
+    procMono(feedfwd_delays, feedback_delays, feedback_gain, x) = x : 
+    (+ : allpass_chain(feedfwd_delays, x)) ~ (_,x : + : section(feedback_delays) : 
+    *(feedback_gain)) :> _;
+    // left reverb
+	feedfwd_delays_left = par(i, 5, (ba.take((ind_left(i)), primes), ba.take((ind_left(i+1)), primes)));
+	feedback_delays_left = (ba.take(100, primes), ba.take(101, primes));
+	procLeft = procMono(feedfwd_delays_left, feedback_delays_left, krt);
+	// right reverb
+	feedfwd_delays_right = par(i, 4, (ba.take((ind_right(i)), primes), ba.take((ind_right(i+1)), primes)));
+	feedback_delays_right = (ba.take(97, primes), ba.take(99, primes));
+	procRight = procMono(feedfwd_delays_right, feedback_delays_right, krt);
+};
+process = ck_kbVerb(0.7, 0.5);
+```
+
+### James Dattorro and the Lexicon 480L Topology: A Landmark in Reverb Design
+
+In his groundbreaking paper published in the Journal of the Audio Engineering Society, Vol. 45, No. 9, September 1997, James Dattorro opened up the design secrets behind the allpass loop reverbs, offering detailed insights into a reverb architecture that would shape the future of digital reverb technology.
+Whereas earlier papers, such as Gardner’s, hinted at concepts that had been circulating privately within the music technology industry, Dattorro’s paper fully exposed the inner workings of allpass loop reverbs. He introduced a specific allpass loop reverb in great detail, including all the delay lengths and coefficients, which he described as being “in the style of [Lexicon’s] Griesinger.” This paper effectively served as a Rosetta Stone for reverb design, offering a clear and practical understanding of the mechanisms that drive reverb effects. Many modern reverb plugins and built-in synth reverbs have directly recreated the “Dattorro” reverb, underscoring the paper’s enduring influence in the field.
+One of the paper’s key contributions was Dattorro’s exploration of the single loop feedback system, which was central to the Lexicon 480L’s reverb design. This architecture, which Dattorro helped reveal, is simpler yet more effective in simulating natural reverbs, providing dense and realistic sound with minimal complexity. The Lexicon 480L's feedback structure, initially shrouded in secrecy, was described in Dattorro’s work with full transparency, as the company had granted him permission to detail their proprietary system. This was a crucial moment in the advancement of reverb design, as it opened up new possibilities for digital reverberation.
+
+```faust
+greisingerReverb(decay, damp) = (si.bus(2) :> _ * (1 / 2) : predelay : op(damp) : apfsec) <: si.bus(2) : (ro.interleave(2, 2) : (par(i, 2, (_, _) :> + : loopsec(i)) : ro.crossNM(4, 1), si.bus(3))) ~ si.bus(2) : (si.block(2), si.bus(6)) : routing
+with{
+    predelay = _ @ msasamps(30);
+
+    apfsec = apf(msasamps(4.771), 0.75) : apf(msasamps(3.595), 0.75) :
+        apf(msasamps(12.73), 0.625) : apf(msasamps(9.307), 0.625);
+
+    loopsec(0) = apfMod(os.osc(0.10), msasamps(30.51), msasamps(4), 0.7) : 
+        _ @ msasamps(141.69) : (_ <: _, _) : (op(damp), _) : 
+        (apf(msasamps(89.24), 0.5) <: _, _), _ : 
+        (_ @ (msasamps(106.28) - 1) <: _, mem), _, _ :  
+        (_ * decay, _, _, _) : (_, ro.cross(3));
+
+    loopsec(1) = apfMod(os.osc(0.07), msasamps(22.58), msasamps(4), 0.7) : 
+        _ @ msasamps(149.62) : (_ <: _, _) : (op(damp), _) : 
+        (apf(msasamps(60.48), 0.5) <: _, _), _ : 
+        (_ @ (msasamps(125.00) - 1) <: _, mem), _, _ :  
+        (_ * decay, _, _, _) : (_, ro.cross(3));
+
+    routing(dA0, ap0, dB0, dA1, ap1, dB1) = 
+        ((dA0 @ msasamps(8.90), dA0 @ msasamps(99.8), ap0 @ msasamps(64.2), dB0 @ msasamps(67),
+          dA1 @ msasamps(66.8), ap1 @ msasamps(6.3), dB1 @ msasamps(35.8),  0) :> +),
+        ((dA0 @ msasamps(70.8), ap0 @ msasamps(11.2), dB0 @ msasamps(4.1), dA1 @ msasamps(11.8), 
+          dA1 @ msasamps(121.7), ap1 @ msasamps(41.2), dB1 @ msasamps(89.7), 0) :> +);
+};
+process = greisingerReverb(0.8, 0.4); 
+```
 ## References
 
 - Manfred Schroeder, “Natural Sounding Artificial Reverb,” 1962. 
@@ -542,14 +752,14 @@ process = moorerReverb;
 - Jean-Marc Jot, “Efficient models for reverberation and distance rendering in computer music and virtual audio reality,” 1997. 
 - D. Rochesso, “Reverberation,” DAFX - Digital Audio Effects, Udo Zölzer, 2002.
   
-  ## Topologies
+## Topologies
   
-  - Manfred Schroeder propone l'applicazione di una rete di allpass e comb filters.
-  - James Moorer implementa un filtro lowpass all'interno della retroazione dei comb.
-  - Christopher Moore propone linee di ritardo modulate nel tempo e uscite Multi-tap da modelli delle early relfection.
-  - William Martens e Gary Kendall propongono delle early reflection spazializzate.
-  - Michael Gerzon, John Stautner & Miller Puckette propongono le Feedback Delay Network (mixer a matrice per i feedback).
-  - David Griesinger propone un singolo Loop di Feedback utilizzando ritardi e filtri allpass.
+- Manfred Schroeder propone l'applicazione di una rete di allpass e comb filters.
+- James Moorer implementa un filtro lowpass all'interno della retroazione dei comb.
+- Christopher Moore propone linee di ritardo modulate nel tempo e uscite Multi-tap da modelli delle early relfection.
+- William Martens e Gary Kendall propongono delle early reflection spazializzate.
+- Michael Gerzon, John Stautner & Miller Puckette propongono le Feedback Delay Network (mixer a matrice per i feedback).
+- David Griesinger propone un singolo Loop di Feedback utilizzando ritardi e filtri allpass.
 
 # Main References
 
