@@ -420,6 +420,117 @@ https://github.com/LucaSpanedda/Digital_Reverberation_in_Faust/blob/19acaf236017
 
 # Topologies and Design of Digital Reverbs
 
+### Chamberlin Reverb
+
+The Chamberlin Reverb is named after Hal Chamberlin, a pioneer in digital sound processing. This reverberation model was first introduced in his seminal book, Musical Applications of Microprocessors (1979).
+At its core, the Chamberlin Reverb uses a network of all-pass filters (APF) to create a dense and natural-sounding reverberation effect. 
+The model is particularly effective at simulating small acoustic spaces, such as rooms or chambers, and is designed with simplicity in mind, making it computationally efficient. This efficiency made it suitable for the early digital processors with limited resources.
+
+```
+// Chamberlin Reverb
+chamberlinReverb = ap3ch <: apout1ch, apout2ch
+with {
+    ap3ch = apf(msasamps(49.6), 0.75) : apf(msasamps(34.75), 0.72) : apf(msasamps(24.18), 0.691);
+    apout1ch = apf(msasamps(17.85), 0.649) : apf(msasamps(10.98), 0.662);
+    apout2ch = apf(msasamps(18.01), 0.646) : apf(msasamps(10.82), 0.666);
+};
+process = chamberlinReverb;
+```
+
+### Chamberlin Reverb with Decay T60
+
+This version includes a decay time T60 control in the comb-allpass filters, representing the time required for the signal to decay by 60 dB.
+
+```
+// Chamberlin Reverb with T60 Decay
+chamberlinDecay(seconds) = ap3ch <: apout1ch, apout2ch
+with {
+    ap3ch = apf(msasamps(49.6), t60_ms(49.6, seconds)) : 
+            apf(msasamps(34.75), t60_ms(34.75, seconds)) : 
+            apf(msasamps(24.18), t60_ms(24.18, seconds));
+    apout1ch = apf(msasamps(17.85), t60_ms(17.85, seconds)) : 
+               apf(msasamps(10.98), t60_ms(10.98, seconds));
+    apout2ch = apf(msasamps(18.01), t60_ms(18.01, seconds)) : 
+               apf(msasamps(10.82), t60_ms(10.82, seconds));
+};
+process = chamberlinDecay(10);
+```
+
+### Schroeder-Chowning SATREV Reverberator
+
+The Schroeder-Chowning SATREV Reverberator is a landmark in the history of algorithmic reverb design, based on the design proposed by Manfred Schroeder and refined by John Chowning, this model combines 4 parallel comb filters with 3 serial all-pass filters (drawn from a 1971 MUS10 software listing).
+
+```
+// Schroeder-Chowning SATREV Reverberator
+satreverb = _ * 0.2 <: fbcfSchroeder(901, 0.805), 
+    fbcfSchroeder(778, 0.827), fbcfSchroeder(1011, 0.783), 
+    fbcfSchroeder(1123, 0.764) :> apf(125, 0.7) : 
+    apf(42, 0.7) : apf(12, 0.7) <: _ , _ * -1;
+process = satreverb;
+```
+
+### Schroeder Samson Box Reverberator
+In October 1977, CCRMA took delivery of the Systems Concepts Digital Synthesizer, affectionately known as the ``Samson Box,'' named after its designer Peter Samson.
+This reverberator developed for this system, which remains known as JCREV, builds upon the earlier reverberation models by Schroeder but expanding on them with improvements that catered to more complex, real-time audio processing requirements.
+This model includes 3 serial all-pass filters and 4 parallel comb filters.
+
+```
+// Schroeder Samson Box Reverberator
+jcreverb = _ * 0.06 : apf(347, 0.7) : apf(113, 0.7) : 
+    apf(37, 0.7) <: fbcfSchroeder(1601, 0.802), fbcfSchroeder(1867, 0.733), 
+    fbcfSchroeder(2053, 0.753), fbcfSchroeder(2251, 0.733) : 
+    mix_mtx
+with {
+    mix_mtx = _,_,_,_ <: psum, - psum, asum, - asum : _,_,_,_;
+    psum = _,_,_,_ :> _;
+    asum = *(-1), _, *(-1), _ :> _;
+};
+process = jcreverb;
+```
+
+### Moorer Reverb
+
+James A. Moorer’s 1979 design for digital reverberation was one of the earliest to build upon the work of Manfred R. Schroeder, refining and expanding on his ideas in significant ways. Moorer’s design, as outlined in his seminal paper "About This Reverberation Business", introduced crucial improvements to digital reverb algorithms that continue to influence modern reverberation models.
+A key innovation in Moorer's approach was the use of a tapped delay line to simulate early reflections—an important feature in the perception of acoustic space. The early reflections, rather than the later reverberant tail, play a more prominent role in how we perceive the size and shape of an environment. The tapped delay line in Moorer's model could be adjusted with specific delay times and gain structures to approximate the reflections of an actual acoustic space, such as a concert hall. In his article, Moorer provides a 19-tap delay line based on a geometric simulation of the Boston Symphony Hall. He omits the first tap, which has a delay time of 0 and a gain of 1, as it represents the original dry signal.
+Additionally, Moorer enhanced his reverb model by incorporating a first-order low-pass filter in the feedback loop of the six comb filters. This filter simulates the absorption effects of air, which are influenced by factors such as humidity, temperature, the frequency of sound, and the distance from the sound source. Moorer discusses how atmospheric conditions affect the intensity of sound as it travels, and this low-pass filter helped account for the natural damping of higher frequencies over distance.
+This combination of early reflections through a tapped delay line and the low-pass feedback filters for air absorption marked a significant step forward in creating more realistic digital reverberation, and Moorer's work laid the foundation for many of the reverberation algorithms in use today.
+
+```
+// Moorer Reverb
+moorerReverb = _ * 0.1 : earlyReflections <: combSection + _
+with {
+    earlyReflections =  _ <: 
+        (_ @ sasamps(0.0043)) * 0.841,
+        (_ @ sasamps(0.0215)) * 0.504,
+        (_ @ sasamps(0.0225)) * 0.491,
+        (_ @ sasamps(0.0268)) * 0.379,
+        (_ @ sasamps(0.0270)) * 0.380,
+        (_ @ sasamps(0.0298)) * 0.346,
+        (_ @ sasamps(0.0458)) * 0.289,
+        (_ @ sasamps(0.0485)) * 0.272,
+        (_ @ sasamps(0.0572)) * 0.192,
+        (_ @ sasamps(0.0587)) * 0.193,
+        (_ @ sasamps(0.0595)) * 0.217,
+        (_ @ sasamps(0.0612)) * 0.181,
+        (_ @ sasamps(0.0707)) * 0.180,
+        (_ @ sasamps(0.0708)) * 0.181,
+        (_ @ sasamps(0.0726)) * 0.176,
+        (_ @ sasamps(0.0741)) * 0.142,
+        (_ @ sasamps(0.0753)) * 0.167,
+        (_ @ sasamps(0.0797)) * 0.134 :> _;
+
+    combSection = _ <: 
+        lbcf(sasamps(0.040), 0.95, 0.5),
+        lbcf(sasamps(0.041), 0.95, 0.5),
+        lbcf(sasamps(0.043), 0.95, 0.5),
+        lbcf(sasamps(0.055), 0.95, 0.5),
+        lbcf(sasamps(0.059), 0.95, 0.5),
+        lbcf(sasamps(0.061), 0.95, 0.5) :> _ :
+        apf(sasamps(0.007), -0.09683) @ sasamps(0.0017);
+};
+process = moorerReverb;
+```
+
 ## References
 
 - Manfred Schroeder, “Natural Sounding Artificial Reverb,” 1962. 
